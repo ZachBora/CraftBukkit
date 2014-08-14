@@ -1450,9 +1450,4 @@ public final class CraftServer implements Server {
 
         return new CraftIconCache("data:image/png;base64," + bytebuf1.toString(Charsets.UTF_8));
     }
-    
-    public void setWorldGenerator(String worldName, String generatorName) {
-        configuration.set("worlds." + worldName + ".generator", generatorName);
-        saveConfig();
-    }
 }
