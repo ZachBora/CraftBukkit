@@ -25,7 +25,7 @@ public class TileEntityChest extends TileEntity implements IInventory {
 
     public TileEntityChest() {}
 
-    // CraftBukkit start
+    // CraftBukkit start - add fields and methods
     public List<HumanEntity> transaction = new java.util.ArrayList<HumanEntity>();
     private int maxStack = MAX_STACK;
 
@@ -239,9 +239,13 @@ public class TileEntityChest extends TileEntity implements IInventory {
     }
 
     private boolean a(int i, int j, int k) {
-        Block block = this.world.getType(i, j, k);
+        if (this.world == null) {
+            return false;
+        } else {
+            Block block = this.world.getType(i, j, k);
 
-        return block instanceof BlockChest && ((BlockChest) block).a == this.j();
+            return block instanceof BlockChest && ((BlockChest) block).a == this.j();
+        }
     }
 
     public void h() {
@@ -254,7 +258,7 @@ public class TileEntityChest extends TileEntity implements IInventory {
         if (!this.world.isStatic && this.o != 0 && (this.ticks + this.x + this.y + this.z) % 200 == 0) {
             this.o = 0;
             f = 5.0F;
-            List list = this.world.a(EntityHuman.class, AxisAlignedBB.a().a((double) ((float) this.x - f), (double) ((float) this.y - f), (double) ((float) this.z - f), (double) ((float) (this.x + 1) + f), (double) ((float) (this.y + 1) + f), (double) ((float) (this.z + 1) + f)));
+            List list = this.world.a(EntityHuman.class, AxisAlignedBB.a((double) ((float) this.x - f), (double) ((float) this.y - f), (double) ((float) this.z - f), (double) ((float) (this.x + 1) + f), (double) ((float) (this.y + 1) + f), (double) ((float) (this.z + 1) + f)));
             Iterator iterator = list.iterator();
 
             while (iterator.hasNext()) {
@@ -343,7 +347,7 @@ public class TileEntityChest extends TileEntity implements IInventory {
 
         ++this.o;
         if (this.world == null) return; // CraftBukkit
-        this.world.playNote(this.x, this.y, this.z, this.q(), 1, this.o);
+        this.world.playBlockAction(this.x, this.y, this.z, this.q(), 1, this.o);
 
         // CraftBukkit start - Call redstone event
         if (this.q() == Blocks.TRAPPED_CHEST) {
@@ -359,13 +363,13 @@ public class TileEntityChest extends TileEntity implements IInventory {
         this.world.applyPhysics(this.x, this.y - 1, this.z, this.q());
     }
 
-    public void l_() {
+    public void closeContainer() {
         if (this.q() instanceof BlockChest) {
             int oldPower = Math.max(0, Math.min(15, this.o)); // CraftBukkit - Get power before new viewer is added
 
             --this.o;
             if (this.world == null) return; // CraftBukkit
-            this.world.playNote(this.x, this.y, this.z, this.q(), 1, this.o);
+            this.world.playBlockAction(this.x, this.y, this.z, this.q(), 1, this.o);
 
             // CraftBukkit start - Call redstone event
             if (this.q() == Blocks.TRAPPED_CHEST) {

@@ -48,7 +48,7 @@ public class EntityBoat extends Entity {
         super(world);
         this.a = true;
         this.b = 0.07D;
-        this.l = true;
+        this.k = true;
         this.a(1.5F, 0.6F);
         this.height = this.length / 2.0F;
     }
@@ -63,7 +63,7 @@ public class EntityBoat extends Entity {
         this.datawatcher.a(19, new Float(0.0F));
     }
 
-    public AxisAlignedBB g(Entity entity) {
+    public AxisAlignedBB h(Entity entity) {
         return entity.boundingBox;
     }
 
@@ -174,7 +174,7 @@ public class EntityBoat extends Entity {
         for (int i = 0; i < b0; ++i) {
             double d1 = this.boundingBox.b + (this.boundingBox.e - this.boundingBox.b) * (double) (i + 0) / (double) b0 - 0.125D;
             double d2 = this.boundingBox.b + (this.boundingBox.e - this.boundingBox.b) * (double) (i + 1) / (double) b0 - 0.125D;
-            AxisAlignedBB axisalignedbb = AxisAlignedBB.a().a(this.boundingBox.a, d1, this.boundingBox.c, this.boundingBox.d, d2, this.boundingBox.f);
+            AxisAlignedBB axisalignedbb = AxisAlignedBB.a(this.boundingBox.a, d1, this.boundingBox.c, this.boundingBox.d, d2, this.boundingBox.f);
 
             if (this.world.b(axisalignedbb, Material.WATER)) {
                 d0 += 1.0D / (double) b0;
@@ -251,10 +251,10 @@ public class EntityBoat extends Entity {
 
             if (this.passenger != null && this.passenger instanceof EntityLiving) {
                 EntityLiving entityliving = (EntityLiving) this.passenger;
-                float f = this.passenger.yaw + -entityliving.be * 90.0F;
+                float f = this.passenger.yaw + -entityliving.bd * 90.0F;
 
-                this.motX += -Math.sin((double) (f * 3.1415927F / 180.0F)) * this.b * (double) entityliving.bf * 0.05000000074505806D;
-                this.motZ += Math.cos((double) (f * 3.1415927F / 180.0F)) * this.b * (double) entityliving.bf * 0.05000000074505806D;
+                this.motX += -Math.sin((double) (f * 3.1415927F / 180.0F)) * this.b * (double) entityliving.be * 0.05000000074505806D;
+                this.motZ += Math.cos((double) (f * 3.1415927F / 180.0F)) * this.b * (double) entityliving.be * 0.05000000074505806D;
             }
             // CraftBukkit start - Support unoccupied deceleration
             else if (unoccupiedDeceleration >= 0) {
@@ -445,17 +445,24 @@ public class EntityBoat extends Entity {
             if (this.fallDistance > 3.0F) {
                 this.b(this.fallDistance);
                 if (!this.world.isStatic && !this.dead) {
-                    this.die();
+                    // CraftBukkit start
+                    Vehicle vehicle = (Vehicle) this.getBukkitEntity();
+                    VehicleDestroyEvent destroyEvent = new VehicleDestroyEvent(vehicle, null);
+                    this.world.getServer().getPluginManager().callEvent(destroyEvent);
+                    if (!destroyEvent.isCancelled()) {
+                        this.die();
 
-                    int l;
+                        int l;
 
-                    for (l = 0; l < 3; ++l) {
-                        this.a(Item.getItemOf(Blocks.WOOD), 1, 0.0F);
+                        for (l = 0; l < 3; ++l) {
+                            this.a(Item.getItemOf(Blocks.WOOD), 1, 0.0F);
+                        }
+
+                        for (l = 0; l < 2; ++l) {
+                            this.a(Items.STICK, 1, 0.0F);
+                        }
                     }
-
-                    for (l = 0; l < 2; ++l) {
-                        this.a(Items.STICK, 1, 0.0F);
-                    }
+                    // CraftBukkit end
                 }
 
                 this.fallDistance = 0.0F;

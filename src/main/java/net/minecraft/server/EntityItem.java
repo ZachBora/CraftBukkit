@@ -54,7 +54,7 @@ public class EntityItem extends Entity {
     }
 
     protected void c() {
-        this.getDataWatcher().a(10, 5);
+        this.getDataWatcher().add(10, 5);
     }
 
     public void h() {
@@ -73,7 +73,7 @@ public class EntityItem extends Entity {
             this.lastY = this.locY;
             this.lastZ = this.locZ;
             this.motY -= 0.03999999910593033D;
-            this.Y = this.j(this.locX, (this.boundingBox.b + this.boundingBox.e) / 2.0D, this.locZ);
+            this.X = this.j(this.locX, (this.boundingBox.b + this.boundingBox.e) / 2.0D, this.locZ);
             this.move(this.motX, this.motY, this.motZ);
             boolean flag = (int) this.lastX != (int) this.locX || (int) this.lastY != (int) this.locY || (int) this.lastZ != (int) this.locZ;
 
@@ -105,7 +105,7 @@ public class EntityItem extends Entity {
 
             // ++this.age; // CraftBukkit - Moved up
             if (!this.world.isStatic && this.age >= 6000) {
-                // CraftBukkit start
+                // CraftBukkit start - fire ItemDespawnEvent
                 if (org.bukkit.craftbukkit.event.CraftEventFactory.callItemDespawnEvent(this).isCancelled()) {
                     this.age = 0;
                     return;
@@ -175,7 +175,7 @@ public class EntityItem extends Entity {
     public boolean damageEntity(DamageSource damagesource, float f) {
         if (this.isInvulnerable()) {
             return false;
-        } else if (this.getItemStack() != null && this.getItemStack().getItem() == Items.NETHER_STAR && damagesource.c()) {
+        } else if (this.getItemStack() != null && this.getItemStack().getItem() == Items.NETHER_STAR && damagesource.isExplosion()) {
             return false;
         } else {
             this.Q();
@@ -217,7 +217,7 @@ public class EntityItem extends Entity {
 
         NBTTagCompound nbttagcompound1 = nbttagcompound.getCompound("Item");
 
-        // CraftBukkit start
+        // CraftBukkit start - Handle missing "Item" compounds
         if (nbttagcompound1 != null) {
             ItemStack itemstack = ItemStack.createStack(nbttagcompound1);
             if (itemstack != null) {
@@ -239,7 +239,7 @@ public class EntityItem extends Entity {
             ItemStack itemstack = this.getItemStack();
             int i = itemstack.count;
 
-            // CraftBukkit start
+            // CraftBukkit start - fire PlayerPickupItemEvent
             int canHold = entityhuman.inventory.canHold(itemstack);
             int remaining = itemstack.count - canHold;
 
@@ -315,20 +315,12 @@ public class EntityItem extends Entity {
     public ItemStack getItemStack() {
         ItemStack itemstack = this.getDataWatcher().getItemStack(10);
 
-        if (itemstack == null) {
-            if (this.world != null) {
-                d.error("Item entity " + this.getId() + " has no item?!");
-            }
-
-            return new ItemStack(Blocks.STONE);
-        } else {
-            return itemstack;
-        }
+        return itemstack == null ? new ItemStack(Blocks.STONE) : itemstack; 
     }
 
     public void setItemStack(ItemStack itemstack) {
         this.getDataWatcher().watch(10, itemstack);
-        this.getDataWatcher().h(10);
+        this.getDataWatcher().update(10);
     }
 
     public String i() {

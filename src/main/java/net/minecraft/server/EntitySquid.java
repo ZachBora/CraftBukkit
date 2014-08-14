@@ -27,7 +27,7 @@ public class EntitySquid extends EntityWaterAnimal {
 
     protected void aD() {
         super.aD();
-        this.getAttributeInstance(GenericAttributes.a).setValue(10.0D);
+        this.getAttributeInstance(GenericAttributes.maxHealth).setValue(10.0D);
     }
 
     protected String t() {
@@ -47,7 +47,7 @@ public class EntitySquid extends EntityWaterAnimal {
     }
 
     protected Item getLoot() {
-        return Item.d(0);
+        return Item.getById(0);
     }
 
     protected boolean g_() {
@@ -55,16 +55,11 @@ public class EntitySquid extends EntityWaterAnimal {
     }
 
     protected void dropDeathLoot(boolean flag, int i) {
-        // CraftBukkit start - Whole method
-        java.util.List<org.bukkit.inventory.ItemStack> loot = new java.util.ArrayList<org.bukkit.inventory.ItemStack>();
+        int j = this.random.nextInt(3 + i) + 1;
 
-        int count = this.random.nextInt(3 + i) + 1;
-        if (count > 0) {
-            loot.add(new org.bukkit.inventory.ItemStack(org.bukkit.Material.INK_SACK, count));
+        for (int k = 0; k < j; ++k) {
+            this.a(new ItemStack(Items.INK_SACK, 1, 0), 0.0F);
         }
-
-        org.bukkit.craftbukkit.event.CraftEventFactory.callEntityDeathEvent(this, loot);
-        // CraftBukkit end
     }
 
     /* CraftBukkit start - Delegate to Entity to use existing inWater value
@@ -113,8 +108,8 @@ public class EntitySquid extends EntityWaterAnimal {
 
             f = MathHelper.sqrt(this.motX * this.motX + this.motZ * this.motZ);
             // CraftBukkit - Math -> TrigMath
-            this.aN += (-((float) TrigMath.atan2(this.motX, this.motZ)) * 180.0F / 3.1415927F - this.aN) * 0.1F;
-            this.yaw = this.aN;
+            this.aM += (-((float) TrigMath.atan2(this.motX, this.motZ)) * 180.0F / 3.1415927F - this.aM) * 0.1F;
+            this.yaw = this.aM;
             this.br += 3.1415927F * this.bz * 1.5F;
             // CraftBukkit - Math -> TrigMath
             this.bp += (-((float) TrigMath.atan2((double) f, this.motY)) * 180.0F / 3.1415927F - this.bp) * 0.1F;
@@ -136,8 +131,8 @@ public class EntitySquid extends EntityWaterAnimal {
     }
 
     protected void bq() {
-        ++this.aV;
-        if (this.aV > 100) {
+        ++this.aU;
+        if (this.aU > 100) {
             this.bA = this.bB = this.bC = 0.0F;
         } else if (this.random.nextInt(50) == 0 || !this.inWater || this.bA == 0.0F && this.bB == 0.0F && this.bC == 0.0F) {
             float f = this.random.nextFloat() * 3.1415927F * 2.0F;

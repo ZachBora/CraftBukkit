@@ -1,5 +1,6 @@
 package net.minecraft.server;
 
+import org.bukkit.event.entity.EntityCombustByEntityEvent;
 import org.bukkit.event.entity.EntityTargetEvent; // CraftBukkit
 
 public abstract class EntityMonster extends EntityCreature implements IMonster {
@@ -14,7 +15,7 @@ public abstract class EntityMonster extends EntityCreature implements IMonster {
         float f = this.d(1.0F);
 
         if (f > 0.5F) {
-            this.aV += 2;
+            this.aU += 2;
         }
 
         super.e();
@@ -38,7 +39,7 @@ public abstract class EntityMonster extends EntityCreature implements IMonster {
     protected Entity findTarget() {
         EntityHuman entityhuman = this.world.findNearbyVulnerablePlayer(this, 16.0D);
 
-        return entityhuman != null && this.o(entityhuman) ? entityhuman : null;
+        return entityhuman != null && this.hasLineOfSight(entityhuman) ? entityhuman : null;
     }
 
     public boolean damageEntity(DamageSource damagesource, float f) {
@@ -87,7 +88,7 @@ public abstract class EntityMonster extends EntityCreature implements IMonster {
         return i > 4 ? "game.hostile.hurt.fall.big" : "game.hostile.hurt.fall.small";
     }
 
-    public boolean m(Entity entity) {
+    public boolean n(Entity entity) {
         float f = (float) this.getAttributeInstance(GenericAttributes.e).getValue();
         int i = 0;
 
@@ -108,7 +109,14 @@ public abstract class EntityMonster extends EntityCreature implements IMonster {
             int j = EnchantmentManager.getFireAspectEnchantmentLevel(this);
 
             if (j > 0) {
-                entity.setOnFire(j * 4);
+                // CraftBukkit start - Call a combust event when somebody hits with a fire enchanted item
+                EntityCombustByEntityEvent combustEvent = new EntityCombustByEntityEvent(this.getBukkitEntity(), entity.getBukkitEntity(), j * 4);
+                org.bukkit.Bukkit.getPluginManager().callEvent(combustEvent);
+
+                if (!combustEvent.isCancelled()) {
+                    entity.setOnFire(combustEvent.getDuration());
+                }
+                // CraftBukkit end
             }
 
             if (entity instanceof EntityLiving) {
@@ -124,7 +132,7 @@ public abstract class EntityMonster extends EntityCreature implements IMonster {
     protected void a(Entity entity, float f) {
         if (this.attackTicks <= 0 && f < 2.0F && entity.boundingBox.e > this.boundingBox.b && entity.boundingBox.b < this.boundingBox.e) {
             this.attackTicks = 20;
-            this.m(entity);
+            this.n(entity);
         }
     }
 
@@ -142,7 +150,7 @@ public abstract class EntityMonster extends EntityCreature implements IMonster {
         } else {
             int l = this.world.getLightLevel(i, j, k);
 
-            if (this.world.O()) {
+            if (this.world.P()) {
                 int i1 = this.world.j;
 
                 this.world.j = 10;
@@ -160,7 +168,7 @@ public abstract class EntityMonster extends EntityCreature implements IMonster {
 
     protected void aD() {
         super.aD();
-        this.bc().b(GenericAttributes.e);
+        this.getAttributeMap().b(GenericAttributes.e);
     }
 
     protected boolean aG() {

@@ -15,6 +15,10 @@ members:
   "org/bukkit/event/entity/EntityRegainHealthEvent _INVALID_setAmount (I)V": setAmount
   "org/bukkit/entity/Minecart _INVALID_getDamage ()I": getDamage
   "org/bukkit/entity/Minecart _INVALID_setDamage (I)V": setDamage
+  "org/bukkit/entity/Projectile _INVALID_getShooter ()Lorg/bukkit/entity/LivingEntity;": getShooter
+  "org/bukkit/entity/Projectile _INVALID_setShooter (Lorg/bukkit/entity/LivingEntity;)V": setShooter
+  "org/bukkit/Bukkit _INVALID_getOnlinePlayers ()[Lorg/bukkit/entity/Player;": getOnlinePlayers
+  "org/bukkit/Server _INVALID_getOnlinePlayers ()[Lorg/bukkit/entity/Player;": getOnlinePlayers
 flags:
   "org/bukkit/craftbukkit/v${minecraft_version}/entity/CraftLivingEntity getHealth ()I": 0x1001
   "org/bukkit/craftbukkit/v${minecraft_version}/entity/CraftEnderDragonPart getHealth ()I": 0x1001
@@ -32,3 +36,11 @@ flags:
   "org/bukkit/craftbukkit/v${minecraft_version}/entity/CraftLivingEntity setLastDamage (I)V": 0x1001
   "org/bukkit/craftbukkit/v${minecraft_version}/entity/CraftMinecart setDamage (I)V": 0x1001
   "org/bukkit/craftbukkit/v${minecraft_version}/entity/CraftMinecart getDamage ()I": 0x1001
+  "org/bukkit/craftbukkit/v${minecraft_version}/entity/CraftProjectile getShooter ()Lorg/bukkit/entity/LivingEntity;": 0x1001
+  "org/bukkit/craftbukkit/v${minecraft_version}/entity/CraftProjectile setShooter (Lorg/bukkit/entity/LivingEntity;)V": 0x1001
+  "org/bukkit/craftbukkit/v${minecraft_version}/entity/CraftArrow getShooter ()Lorg/bukkit/entity/LivingEntity;": 0x1001
+  "org/bukkit/craftbukkit/v${minecraft_version}/entity/CraftArrow setShooter (Lorg/bukkit/entity/LivingEntity;)V": 0x1001
+  "org/bukkit/craftbukkit/v${minecraft_version}/entity/CraftFireball getShooter ()Lorg/bukkit/entity/LivingEntity;": 0x1001
+  "org/bukkit/craftbukkit/v${minecraft_version}/entity/CraftFireball setShooter (Lorg/bukkit/entity/LivingEntity;)V": 0x1001
+  "org/bukkit/craftbukkit/v${minecraft_version}/entity/CraftFish getShooter ()Lorg/bukkit/entity/LivingEntity;": 0x1001
+  "org/bukkit/craftbukkit/v${minecraft_version}/entity/CraftFish setShooter (Lorg/bukkit/entity/LivingEntity;)V": 0x1001

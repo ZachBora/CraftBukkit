@@ -62,7 +62,7 @@ public class EntityCreeper extends EntityMonster {
 
         nbttagcompound.setShort("Fuse", (short) this.maxFuseTicks);
         nbttagcompound.setByte("ExplosionRadius", (byte) this.explosionRadius);
-        nbttagcompound.setBoolean("ignited", this.ca());
+        nbttagcompound.setBoolean("ignited", this.cc());
     }
 
     public void a(NBTTagCompound nbttagcompound) {
@@ -77,18 +77,18 @@ public class EntityCreeper extends EntityMonster {
         }
 
         if (nbttagcompound.getBoolean("ignited")) {
-            this.cb();
+            this.cd();
         }
     }
 
     public void h() {
         if (this.isAlive()) {
             this.bp = this.fuseTicks;
-            if (this.ca()) {
+            if (this.cc()) {
                 this.a(1);
             }
 
-            int i = this.bZ();
+            int i = this.cb();
 
             if (i > 0 && this.fuseTicks == 0) {
                 this.makeSound("creeper.primed", 1.0F, 0.5F);
@@ -101,7 +101,7 @@ public class EntityCreeper extends EntityMonster {
 
             if (this.fuseTicks >= this.maxFuseTicks) {
                 this.fuseTicks = this.maxFuseTicks;
-                this.cc();
+                this.ce();
             }
         }
 
@@ -117,49 +117,34 @@ public class EntityCreeper extends EntityMonster {
     }
 
     public void die(DamageSource damagesource) {
-        // CraftBukkit start - Rearranged the method (super call to end, drop to dropDeathLoot)
+        // super.die(damagesource); // CraftBukkit - Moved to end
         if (damagesource.getEntity() instanceof EntitySkeleton) {
-            int i = Item.b(Items.RECORD_1);
-            int j = Item.b(Items.RECORD_12);
+            int i = Item.getId(Items.RECORD_1);
+            int j = Item.getId(Items.RECORD_12);
             int k = i + this.random.nextInt(j - i + 1);
 
-            // this.a(Item.d(k), 1); // CraftBukkit
+            // CraftBukkit start - Store record for now, drop in dropDeathLoot
+            // this.a(Item.getById(k), 1);
             this.record = k;
+            // CraftBukkit end
         }
 
-        super.die(damagesource);
-        // CraftBukkit end
+        super.die(damagesource); // CraftBukkit - Moved from above
     }
 
     // CraftBukkit start - Whole method
     protected void dropDeathLoot(boolean flag, int i) {
-        Item j = this.getLoot();
-
-        java.util.List<org.bukkit.inventory.ItemStack> loot = new java.util.ArrayList<org.bukkit.inventory.ItemStack>();
-
-        if (j != null) {
-            int k = this.random.nextInt(3);
-
-            if (i > 0) {
-                k += this.random.nextInt(i + 1);
-            }
-
-            if (k > 0) {
-                loot.add(new org.bukkit.inventory.ItemStack(org.bukkit.craftbukkit.util.CraftMagicNumbers.getMaterial(j), k));
-            }
-        }
+        super.dropDeathLoot(flag, i);
 
         // Drop a music disc?
         if (this.record != -1) {
-            loot.add(new org.bukkit.inventory.ItemStack(this.record, 1)); // TODO: Material
+            this.a(Item.getById(this.record), 1);
             this.record = -1;
         }
-
-        CraftEventFactory.callEntityDeathEvent(this, loot); // raise event even for those times when the entity does not drop loot
     }
     // CraftBukkit end
 
-    public boolean m(Entity entity) {
+    public boolean n(Entity entity) {
         return true;
     }
 
@@ -171,7 +156,7 @@ public class EntityCreeper extends EntityMonster {
         return Items.SULPHUR;
     }
 
-    public int bZ() {
+    public int cb() {
         return this.datawatcher.getByte(16);
     }
 
@@ -205,7 +190,7 @@ public class EntityCreeper extends EntityMonster {
             this.world.makeSound(this.locX + 0.5D, this.locY + 0.5D, this.locZ + 0.5D, "fire.ignite", 1.0F, this.random.nextFloat() * 0.4F + 0.8F);
             entityhuman.ba();
             if (!this.world.isStatic) {
-                this.cb();
+                this.cd();
                 itemstack.damage(1, entityhuman);
                 return true;
             }
@@ -214,7 +199,7 @@ public class EntityCreeper extends EntityMonster {
         return super.a(entityhuman);
     }
 
-    private void cc() {
+    private void ce() {
         if (!this.world.isStatic) {
             boolean flag = this.world.getGameRules().getBoolean("mobGriefing");
 
@@ -233,11 +218,11 @@ public class EntityCreeper extends EntityMonster {
         }
     }
 
-    public boolean ca() {
+    public boolean cc() {
         return this.datawatcher.getByte(18) != 0;
     }
 
-    public void cb() {
+    public void cd() {
         this.datawatcher.watch(18, Byte.valueOf((byte) 1));
     }
 }

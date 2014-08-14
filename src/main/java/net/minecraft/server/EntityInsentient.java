@@ -14,9 +14,9 @@ public abstract class EntityInsentient extends EntityLiving {
 
     public int a_;
     protected int b;
-    private ControllerLook h;
+    private ControllerLook lookController;
     private ControllerMove moveController;
-    private ControllerJump lookController;
+    private ControllerJump bm;
     private EntityAIBodyControl bn;
     private Navigation navigation;
     protected final PathfinderGoalSelector goalSelector;
@@ -38,9 +38,9 @@ public abstract class EntityInsentient extends EntityLiving {
         super(world);
         this.goalSelector = new PathfinderGoalSelector(world != null && world.methodProfiler != null ? world.methodProfiler : null);
         this.targetSelector = new PathfinderGoalSelector(world != null && world.methodProfiler != null ? world.methodProfiler : null);
-        this.h = new ControllerLook(this);
+        this.lookController = new ControllerLook(this);
         this.moveController = new ControllerMove(this);
-        this.lookController = new ControllerJump(this);
+        this.bm = new ControllerJump(this);
         this.bn = new EntityAIBodyControl(this);
         this.navigation = new Navigation(this, world);
         this.bq = new EntitySenses(this);
@@ -52,11 +52,11 @@ public abstract class EntityInsentient extends EntityLiving {
 
     protected void aD() {
         super.aD();
-        this.bc().b(GenericAttributes.b).setValue(16.0D);
+        this.getAttributeMap().b(GenericAttributes.b).setValue(16.0D);
     }
 
     public ControllerLook getControllerLook() {
-        return this.h;
+        return this.lookController;
     }
 
     public ControllerMove getControllerMove() {
@@ -64,7 +64,7 @@ public abstract class EntityInsentient extends EntityLiving {
     }
 
     public ControllerJump getControllerJump() {
-        return this.lookController;
+        return this.bm;
     }
 
     public Navigation getNavigation() {
@@ -149,7 +149,7 @@ public abstract class EntityInsentient extends EntityLiving {
     public void h() {
         super.h();
         if (!this.world.isStatic) {
-            this.bJ();
+            this.bL();
         }
     }
 
@@ -167,12 +167,10 @@ public abstract class EntityInsentient extends EntityLiving {
     }
 
     protected Item getLoot() {
-        return Item.d(0);
+        return Item.getById(0);
     }
 
     protected void dropDeathLoot(boolean flag, int i) {
-        // CraftBukkit start - Whole method
-        List<org.bukkit.inventory.ItemStack> loot = new java.util.ArrayList<org.bukkit.inventory.ItemStack>();
         Item item = this.getLoot();
 
         if (item != null) {
@@ -182,30 +180,15 @@ public abstract class EntityInsentient extends EntityLiving {
                 j += this.random.nextInt(i + 1);
             }
 
-            if (j > 0) {
-                loot.add(new org.bukkit.inventory.ItemStack(org.bukkit.craftbukkit.util.CraftMagicNumbers.getMaterial(item), j));
+            for (int k = 0; k < j; ++k) {
+                this.a(item, 1);
             }
         }
-
-        // Determine rare item drops and add them to the loot
-        if (this.lastDamageByPlayerTime > 0) {
-            int k = this.random.nextInt(200) - i;
-
-            if (k < 5) {
-                ItemStack itemstack = this.getRareDrop(k <= 0 ? 1 : 0);
-                if (itemstack != null) {
-                    loot.add(org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(itemstack));
-                }
-            }
-        }
-
-        CraftEventFactory.callEntityDeathEvent(this, loot); // raise event even for those times when the entity does not drop loot
-        // CraftBukkit end
     }
 
     public void b(NBTTagCompound nbttagcompound) {
         super.b(nbttagcompound);
-        nbttagcompound.setBoolean("CanPickUpLoot", this.bH());
+        nbttagcompound.setBoolean("CanPickUpLoot", this.bJ());
         nbttagcompound.setBoolean("PersistenceRequired", this.persistent);
         NBTTagList nbttaglist = new NBTTagList();
 
@@ -294,7 +277,7 @@ public abstract class EntityInsentient extends EntityLiving {
     }
 
     public void n(float f) {
-        this.bf = f;
+        this.be = f;
     }
 
     public void i(float f) {
@@ -305,7 +288,7 @@ public abstract class EntityInsentient extends EntityLiving {
     public void e() {
         super.e();
         this.world.methodProfiler.a("looting");
-        if (!this.world.isStatic && this.bH() && !this.aU && this.world.getGameRules().getBoolean("mobGriefing")) {
+        if (!this.world.isStatic && this.bJ() && !this.aT && this.world.getGameRules().getBoolean("mobGriefing")) {
             List list = this.world.a(EntityItem.class, this.boundingBox.grow(1.0D, 0.0D, 1.0D));
             Iterator iterator = list.iterator();
 
@@ -389,7 +372,7 @@ public abstract class EntityInsentient extends EntityLiving {
 
     protected void w() {
         if (this.persistent) {
-            this.aV = 0;
+            this.aU = 0;
         } else {
             EntityHuman entityhuman = this.world.findNearbyPlayer(this, -1.0D);
 
@@ -403,17 +386,17 @@ public abstract class EntityInsentient extends EntityLiving {
                     this.die();
                 }
 
-                if (this.aV > 600 && this.random.nextInt(800) == 0 && d3 > 1024.0D) { // CraftBukkit - remove isTypeNotPersistent() check
+                if (this.aU > 600 && this.random.nextInt(800) == 0 && d3 > 1024.0D) { // CraftBukkit - remove isTypeNotPersistent() check
                     this.die();
                 } else if (d3 < 1024.0D) {
-                    this.aV = 0;
+                    this.aU = 0;
                 }
             }
         }
     }
 
     protected void bn() {
-        ++this.aV;
+        ++this.aU;
         this.world.methodProfiler.a("checkDespawn");
         this.w();
         this.world.methodProfiler.b();
@@ -436,17 +419,17 @@ public abstract class EntityInsentient extends EntityLiving {
         this.world.methodProfiler.a("move");
         this.moveController.c();
         this.world.methodProfiler.c("look");
-        this.h.a();
+        this.lookController.a();
         this.world.methodProfiler.c("jump");
-        this.lookController.b();
+        this.bm.b();
         this.world.methodProfiler.b();
         this.world.methodProfiler.b();
     }
 
     protected void bq() {
         super.bq();
+        this.bd = 0.0F;
         this.be = 0.0F;
-        this.bf = 0.0F;
         this.w();
         float f = 8.0F;
 
@@ -457,21 +440,21 @@ public abstract class EntityInsentient extends EntityLiving {
                 this.bu = entityhuman;
                 this.g = 10 + this.random.nextInt(20);
             } else {
-                this.bg = (this.random.nextFloat() - 0.5F) * 20.0F;
+                this.bf = (this.random.nextFloat() - 0.5F) * 20.0F;
             }
         }
 
         if (this.bu != null) {
             this.a(this.bu, 10.0F, (float) this.x());
-            if (this.g-- <= 0 || this.bu.dead || this.bu.e((Entity) this) > (double) (f * f)) {
+            if (this.g-- <= 0 || this.bu.dead || this.bu.f((Entity) this) > (double) (f * f)) {
                 this.bu = null;
             }
         } else {
             if (this.random.nextFloat() < 0.05F) {
-                this.bg = (this.random.nextFloat() - 0.5F) * 20.0F;
+                this.bf = (this.random.nextFloat() - 0.5F) * 20.0F;
             }
 
-            this.yaw += this.bg;
+            this.yaw += this.bf;
             this.pitch = this.f;
         }
 
@@ -479,7 +462,7 @@ public abstract class EntityInsentient extends EntityLiving {
         boolean flag1 = this.P();
 
         if (flag || flag1) {
-            this.bd = this.random.nextFloat() < 0.8F;
+            this.bc = this.random.nextFloat() < 0.8F;
         }
     }
 
@@ -526,7 +509,7 @@ public abstract class EntityInsentient extends EntityLiving {
         return this.world.b(this.boundingBox) && this.world.getCubes(this, this.boundingBox).isEmpty() && !this.world.containsLiquid(this.boundingBox);
     }
 
-    public int bz() {
+    public int bB() {
         return 4;
     }
 
@@ -591,7 +574,7 @@ public abstract class EntityInsentient extends EntityLiving {
         }
     }
 
-    protected void bA() {
+    protected void bC() {
         if (this.random.nextFloat() < 0.15F * this.world.b(this.locX, this.locY, this.locZ)) {
             int i = this.random.nextInt(2);
             float f = this.world.difficulty == EnumDifficulty.HARD ? 0.1F : 0.25F;
@@ -709,7 +692,7 @@ public abstract class EntityInsentient extends EntityLiving {
         }
     }
 
-    protected void bB() {
+    protected void bD() {
         float f = this.world.b(this.locX, this.locY, this.locZ);
 
         if (this.be() != null && this.random.nextFloat() < 0.25F * f) {
@@ -725,12 +708,12 @@ public abstract class EntityInsentient extends EntityLiving {
         }
     }
 
-    public GroupDataEntity a(GroupDataEntity groupdataentity) {
+    public GroupDataEntity prepare(GroupDataEntity groupdataentity) {
         this.getAttributeInstance(GenericAttributes.b).a(new AttributeModifier("Random spawn bonus", this.random.nextGaussian() * 0.05D, 1));
         return groupdataentity;
     }
 
-    public boolean bC() {
+    public boolean bE() {
         return false;
     }
 
@@ -738,7 +721,7 @@ public abstract class EntityInsentient extends EntityLiving {
         return this.hasCustomName() ? this.getCustomName() : super.getName();
     }
 
-    public void bD() {
+    public void bF() {
         this.persistent = true;
     }
 
@@ -766,7 +749,7 @@ public abstract class EntityInsentient extends EntityLiving {
         this.dropChances[i] = f;
     }
 
-    public boolean bH() {
+    public boolean bJ() {
         return this.canPickUpLoot;
     }
 
@@ -779,8 +762,8 @@ public abstract class EntityInsentient extends EntityLiving {
     }
 
     public final boolean c(EntityHuman entityhuman) {
-        if (this.bL() && this.getLeashHolder() == entityhuman) {
-            // CraftBukkit start
+        if (this.bN() && this.getLeashHolder() == entityhuman) {
+            // CraftBukkit start - fire PlayerUnleashEntityEvent
             if (CraftEventFactory.callPlayerUnleashEntityEvent(this, entityhuman).isCancelled()) {
                 ((EntityPlayer) entityhuman).playerConnection.sendPacket(new PacketPlayOutAttachEntity(1, this, this.getLeashHolder()));
                 return false;
@@ -791,9 +774,9 @@ public abstract class EntityInsentient extends EntityLiving {
         } else {
             ItemStack itemstack = entityhuman.inventory.getItemInHand();
 
-            if (itemstack != null && itemstack.getItem() == Items.LEASH && this.bK()) {
+            if (itemstack != null && itemstack.getItem() == Items.LEASH && this.bM()) {
                 if (!(this instanceof EntityTameableAnimal) || !((EntityTameableAnimal) this).isTamed()) {
-                    // CraftBukkit start
+                    // CraftBukkit start - fire PlayerLeashEntityEvent
                     if (CraftEventFactory.callPlayerLeashEntityEvent(this, entityhuman, entityhuman).isCancelled()) {
                         ((EntityPlayer) entityhuman).playerConnection.sendPacket(new PacketPlayOutAttachEntity(1, this, this.getLeashHolder()));
                         return false;
@@ -804,8 +787,8 @@ public abstract class EntityInsentient extends EntityLiving {
                     return true;
                 }
 
-                if (entityhuman.getName().equalsIgnoreCase(((EntityTameableAnimal) this).getOwnerName())) {
-                    // CraftBukkit start
+                if (((EntityTameableAnimal) this).e(entityhuman)) {
+                    // CraftBukkit start - fire PlayerLeashEntityEvent
                     if (CraftEventFactory.callPlayerLeashEntityEvent(this, entityhuman, entityhuman).isCancelled()) {
                         ((EntityPlayer) entityhuman).playerConnection.sendPacket(new PacketPlayOutAttachEntity(1, this, this.getLeashHolder()));
                         return false;
@@ -825,9 +808,9 @@ public abstract class EntityInsentient extends EntityLiving {
         return false;
     }
 
-    protected void bJ() {
+    protected void bL() {
         if (this.bx != null) {
-            this.bN();
+            this.bP();
         }
 
         if (this.bv) {
@@ -852,11 +835,11 @@ public abstract class EntityInsentient extends EntityLiving {
         }
     }
 
-    public boolean bK() {
-        return !this.bL() && !(this instanceof IMonster);
+    public boolean bM() {
+        return !this.bN() && !(this instanceof IMonster);
     }
 
-    public boolean bL() {
+    public boolean bN() {
         return this.bv;
     }
 
@@ -872,7 +855,7 @@ public abstract class EntityInsentient extends EntityLiving {
         }
     }
 
-    private void bN() {
+    private void bP() {
         if (this.bv && this.bx != null) {
             if (this.bx.hasKeyOfType("UUIDMost", 4) && this.bx.hasKeyOfType("UUIDLeast", 4)) {
                 UUID uuid = new UUID(this.bx.getLong("UUIDMost"), this.bx.getLong("UUIDLeast"));

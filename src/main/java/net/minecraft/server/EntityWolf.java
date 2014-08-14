@@ -1,5 +1,10 @@
 package net.minecraft.server;
 
+// CraftBukkit start
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.bukkit.event.entity.EntityTargetEvent.TargetReason;
+// CraftBukkit end
+
 public class EntityWolf extends EntityTameableAnimal {
 
     private float bq;
@@ -34,9 +39,9 @@ public class EntityWolf extends EntityTameableAnimal {
         super.aD();
         this.getAttributeInstance(GenericAttributes.d).setValue(0.30000001192092896D);
         if (this.isTamed()) {
-            this.getAttributeInstance(GenericAttributes.a).setValue(20.0D);
+            this.getAttributeInstance(GenericAttributes.maxHealth).setValue(20.0D);
         } else {
-            this.getAttributeInstance(GenericAttributes.a).setValue(8.0D);
+            this.getAttributeInstance(GenericAttributes.maxHealth).setValue(8.0D);
         }
     }
 
@@ -100,12 +105,12 @@ public class EntityWolf extends EntityTameableAnimal {
     }
 
     protected Item getLoot() {
-        return Item.d(-1);
+        return Item.getById(-1);
     }
 
     public void e() {
         super.e();
-        if (!this.world.isStatic && this.bs && !this.bt && !this.bQ() && this.onGround) {
+        if (!this.world.isStatic && this.bs && !this.bt && !this.bS() && this.onGround) {
             this.bt = true;
             this.bu = 0.0F;
             this.bv = 0.0F;
@@ -116,13 +121,13 @@ public class EntityWolf extends EntityTameableAnimal {
     public void h() {
         super.h();
         this.br = this.bq;
-        if (this.ci()) {
+        if (this.ck()) {
             this.bq += (1.0F - this.bq) * 0.4F;
         } else {
             this.bq += (0.0F - this.bq) * 0.4F;
         }
 
-        if (this.ci()) {
+        if (this.ck()) {
             this.g = 10;
         }
 
@@ -182,7 +187,7 @@ public class EntityWolf extends EntityTameableAnimal {
         }
     }
 
-    public boolean m(Entity entity) {
+    public boolean n(Entity entity) {
         int i = this.isTamed() ? 4 : 2;
 
         return entity.damageEntity(DamageSource.mobAttack(this), (float) i);
@@ -191,9 +196,9 @@ public class EntityWolf extends EntityTameableAnimal {
     public void setTamed(boolean flag) {
         super.setTamed(flag);
         if (flag) {
-            this.getAttributeInstance(GenericAttributes.a).setValue(20.0D);
+            this.getAttributeInstance(GenericAttributes.maxHealth).setValue(20.0D);
         } else {
-            this.getAttributeInstance(GenericAttributes.a).setValue(8.0D);
+            this.getAttributeInstance(GenericAttributes.maxHealth).setValue(8.0D);
         }
     }
 
@@ -210,7 +215,7 @@ public class EntityWolf extends EntityTameableAnimal {
                             --itemstack.count;
                         }
 
-                        this.heal((float) itemfood.getNutrition(itemstack));
+                        this.heal((float) itemfood.getNutrition(itemstack), org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason.EATING); // CraftBukkit
                         if (itemstack.count <= 0) {
                             entityhuman.inventory.setItem(entityhuman.inventory.itemInHandIndex, (ItemStack) null);
                         }
@@ -231,11 +236,16 @@ public class EntityWolf extends EntityTameableAnimal {
                 }
             }
 
-            if (entityhuman.getName().equalsIgnoreCase(this.getOwnerName()) && !this.world.isStatic && !this.c(itemstack)) {
+            if (this.e(entityhuman) && !this.world.isStatic && !this.c(itemstack)) {
                 this.bp.setSitting(!this.isSitting());
-                this.bd = false;
+                this.bc = false;
                 this.setPathEntity((PathEntity) null);
                 this.setTarget((Entity) null);
+                // CraftBukkit start
+                if (this.getGoalTarget() != null) {
+                    CraftEventFactory.callEntityTargetEvent(this, null, TargetReason.FORGOT_TARGET);
+                }
+                // CraftBukkit end
                 this.setGoalTarget((EntityLiving) null);
             }
         } else if (itemstack != null && itemstack.getItem() == Items.BONE && !this.isAngry()) {
@@ -249,13 +259,18 @@ public class EntityWolf extends EntityTameableAnimal {
 
             if (!this.world.isStatic) {
                 // CraftBukkit - added event call and isCancelled check.
-                if (this.random.nextInt(3) == 0 && !org.bukkit.craftbukkit.event.CraftEventFactory.callEntityTameEvent(this, entityhuman).isCancelled()) {
+                if (this.random.nextInt(3) == 0 && !CraftEventFactory.callEntityTameEvent(this, entityhuman).isCancelled()) {
                     this.setTamed(true);
                     this.setPathEntity((PathEntity) null);
+                    // CraftBukkit start
+                    if (this.getGoalTarget() != null) {
+                        CraftEventFactory.callEntityTargetEvent(this, null, TargetReason.FORGOT_TARGET);
+                    }
+                    // CraftBukkit end
                     this.setGoalTarget((EntityLiving) null);
                     this.bp.setSitting(true);
                     this.setHealth(this.getMaxHealth()); // CraftBukkit - 20.0 -> getMaxHealth()
-                    this.setOwnerName(entityhuman.getName());
+                    this.setOwnerUUID(entityhuman.getUniqueID().toString());
                     this.i(true);
                     this.world.broadcastEntityEffect(this, (byte) 7);
                 } else {
@@ -274,7 +289,7 @@ public class EntityWolf extends EntityTameableAnimal {
         return itemstack == null ? false : (!(itemstack.getItem() instanceof ItemFood) ? false : ((ItemFood) itemstack.getItem()).i());
     }
 
-    public int bz() {
+    public int bB() {
         return 8;
     }
 
@@ -302,10 +317,10 @@ public class EntityWolf extends EntityTameableAnimal {
 
     public EntityWolf b(EntityAgeable entityageable) {
         EntityWolf entitywolf = new EntityWolf(this.world);
-        String s = this.getOwnerName();
+        String s = this.getOwnerUUID();
 
         if (s != null && s.trim().length() > 0) {
-            entitywolf.setOwnerName(s);
+            entitywolf.setOwnerUUID(s);
             entitywolf.setTamed(true);
         }
 
@@ -330,16 +345,16 @@ public class EntityWolf extends EntityTameableAnimal {
         } else {
             EntityWolf entitywolf = (EntityWolf) entityanimal;
 
-            return !entitywolf.isTamed() ? false : (entitywolf.isSitting() ? false : this.cc() && entitywolf.cc());
+            return !entitywolf.isTamed() ? false : (entitywolf.isSitting() ? false : this.ce() && entitywolf.ce());
         }
     }
 
-    public boolean ci() {
+    public boolean ck() {
         return this.datawatcher.getByte(19) == 1;
     }
 
     protected boolean isTypeNotPersistent() {
-        return !this.isTamed(); // CraftBukkit
+        return !this.isTamed() /*&& this.ticksLived > 2400*/; // CraftBukkit
     }
 
     public boolean a(EntityLiving entityliving, EntityLiving entityliving1) {

@@ -97,7 +97,7 @@ public class PathfinderGoalMeleeAttack extends PathfinderGoal {
                 this.b.ba();
             }
 
-            this.b.m(entityliving);
+            this.b.n(entityliving);
         }
     }
 }

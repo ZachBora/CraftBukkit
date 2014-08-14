@@ -31,7 +31,7 @@ public abstract class InventorySubcontainer implements IInventory { // CraftBukk
     }
 
     public ItemStack getItem(int i) {
-        return this.items[i];
+        return i >= 0 && i < this.items.length ? this.items[i] : null;
     }
 
     public ItemStack splitStack(int i, int j) {
@@ -112,7 +112,7 @@ public abstract class InventorySubcontainer implements IInventory { // CraftBukk
 
     public void startOpen() {}
 
-    public void l_() {}
+    public void closeContainer() {}
 
     public boolean b(int i, ItemStack itemstack) {
         return true;

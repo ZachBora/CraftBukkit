@@ -225,7 +225,7 @@ public class PlayerInteractManager {
     }
 
     public boolean breakBlock(int i, int j, int k) {
-        // CraftBukkit start
+        // CraftBukkit start - fire BlockBreakEvent
         BlockBreakEvent event = null;
 
         if (this.player instanceof EntityPlayer) {
@@ -291,19 +291,19 @@ public class PlayerInteractManager {
             }
             // CraftBukkit end
 
-            this.world.a(this.player, 2001, i, j, k, Block.b(block) + (this.world.getData(i, j, k) << 12));
+            this.world.a(this.player, 2001, i, j, k, Block.getId(block) + (this.world.getData(i, j, k) << 12));
             boolean flag = this.d(i, j, k);
 
             if (this.isCreative()) {
                 this.player.playerConnection.sendPacket(new PacketPlayOutBlockChange(i, j, k, this.world));
             } else {
-                ItemStack itemstack = this.player.bD();
+                ItemStack itemstack = this.player.bF();
                 boolean flag1 = this.player.a(block);
 
                 if (itemstack != null) {
                     itemstack.a(this.world, block, i, j, k, this.player);
                     if (itemstack.count == 0) {
-                        this.player.bE();
+                        this.player.bG();
                     }
                 }
 
@@ -342,7 +342,7 @@ public class PlayerInteractManager {
                 entityhuman.inventory.items[entityhuman.inventory.itemInHandIndex] = null;
             }
 
-            if (!entityhuman.bw()) {
+            if (!entityhuman.by()) {
                 ((EntityPlayer) entityhuman).updateInventory(entityhuman.defaultContainer);
             }
 

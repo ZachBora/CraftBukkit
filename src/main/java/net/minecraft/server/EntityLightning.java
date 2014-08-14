@@ -22,16 +22,15 @@ public class EntityLightning extends EntityWeather {
 
         super(world);
 
-        // CraftBukkit start
+        // CraftBukkit - Set isEffect
         this.isEffect = isEffect;
-        // CraftBukkit end
 
         this.setPositionRotation(d0, d1, d2, 0.0F, 0.0F);
         this.lifeTicks = 2;
         this.a = this.random.nextLong();
         this.c = this.random.nextInt(3) + 1;
 
-        // CraftBukkit
+        // CraftBukkit - add "!isEffect"
         if (!isEffect && !world.isStatic && world.getGameRules().getBoolean("doFireTick") && (world.difficulty == EnumDifficulty.NORMAL || world.difficulty == EnumDifficulty.HARD) && world.areChunksLoaded(MathHelper.floor(d0), MathHelper.floor(d1), MathHelper.floor(d2), 10)) {
             int i = MathHelper.floor(d0);
             int j = MathHelper.floor(d1);
@@ -64,7 +63,24 @@ public class EntityLightning extends EntityWeather {
     public void h() {
         super.h();
         if (this.lifeTicks == 2) {
-            this.world.makeSound(this.locX, this.locY, this.locZ, "ambient.weather.thunder", 10000.0F, 0.8F + this.random.nextFloat() * 0.2F);
+            // CraftBukkit start - Use relative location for far away sounds
+            //this.world.makeSound(this.locX, this.locY, this.locZ, "ambient.weather.thunder", 10000.0F, 0.8F + this.random.nextFloat() * 0.2F);
+            float pitch = 0.8F + this.random.nextFloat() * 0.2F;
+            int viewDistance = ((WorldServer) this.world).getServer().getViewDistance() * 16;
+            for (EntityPlayer player : (List<EntityPlayer>) this.world.players) {
+                double deltaX = this.locX - player.locX;
+                double deltaZ = this.locZ - player.locZ;
+                double distanceSquared = deltaX * deltaX + deltaZ * deltaZ;
+                if (distanceSquared > viewDistance * viewDistance) {
+                    double deltaLength = Math.sqrt(distanceSquared);
+                    double relativeX = player.locX + (deltaX / deltaLength) * viewDistance;
+                    double relativeZ = player.locZ + (deltaZ / deltaLength) * viewDistance;
+                    player.playerConnection.sendPacket(new PacketPlayOutNamedSoundEffect("ambient.weather.thunder", relativeX, this.locY, relativeZ, 10000.0F, pitch));
+                } else {
+                    player.playerConnection.sendPacket(new PacketPlayOutNamedSoundEffect("ambient.weather.thunder", this.locX, this.locY, this.locZ, 10000.0F, pitch));
+                }
+            }
+            // CraftBukkit end
             this.world.makeSound(this.locX, this.locY, this.locZ, "random.explode", 2.0F, 0.5F + this.random.nextFloat() * 0.2F);
         }
 
@@ -76,7 +92,7 @@ public class EntityLightning extends EntityWeather {
                 --this.c;
                 this.lifeTicks = 1;
                 this.a = this.random.nextLong();
-                // CraftBukkit
+                // CraftBukkit - add "!isEffect"
                 if (!isEffect && !this.world.isStatic && this.world.getGameRules().getBoolean("doFireTick") && this.world.areChunksLoaded(MathHelper.floor(this.locX), MathHelper.floor(this.locY), MathHelper.floor(this.locZ), 10)) {
                     int i = MathHelper.floor(this.locX);
                     int j = MathHelper.floor(this.locY);
@@ -98,7 +114,7 @@ public class EntityLightning extends EntityWeather {
                 this.world.q = 2;
             } else {
                 double d0 = 3.0D;
-                List list = this.world.getEntities(this, AxisAlignedBB.a().a(this.locX - d0, this.locY - d0, this.locZ - d0, this.locX + d0, this.locY + 6.0D + d0, this.locZ + d0));
+                List list = this.world.getEntities(this, AxisAlignedBB.a(this.locX - d0, this.locY - d0, this.locZ - d0, this.locX + d0, this.locY + 6.0D + d0, this.locZ + d0));
 
                 for (int l = 0; l < list.size(); ++l) {
                     Entity entity = (Entity) list.get(l);

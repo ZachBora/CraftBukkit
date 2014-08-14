@@ -26,16 +26,16 @@ public class Item {
 
     public Item() {}
 
-    public static int b(Item item) {
+    public static int getId(Item item) {
         return item == null ? 0 : REGISTRY.b(item);
     }
 
-    public static Item d(int i) {
+    public static Item getById(int i) {
         return (Item) REGISTRY.a(i);
     }
 
     public static Item getItemOf(Block block) {
-        return d(Block.b(block));
+        return getById(Block.getId(block));
     }
 
     public static void l() {
@@ -213,11 +213,11 @@ public class Item {
         REGISTRY.a(2266, "record_11", (new ItemRecord("11")).c("record").f("record_11"));
         REGISTRY.a(2267, "record_wait", (new ItemRecord("wait")).c("record").f("record_wait"));
         HashSet hashset = Sets.newHashSet(new Block[] { Blocks.AIR, Blocks.BREWING_STAND, Blocks.BED, Blocks.NETHER_WART, Blocks.CAULDRON, Blocks.FLOWER_POT, Blocks.CROPS, Blocks.SUGAR_CANE_BLOCK, Blocks.CAKE_BLOCK, Blocks.SKULL, Blocks.PISTON_EXTENSION, Blocks.PISTON_MOVING, Blocks.GLOWING_REDSTONE_ORE, Blocks.DIODE_ON, Blocks.PUMPKIN_STEM, Blocks.SIGN_POST, Blocks.REDSTONE_COMPARATOR_ON, Blocks.TRIPWIRE, Blocks.REDSTONE_LAMP_ON, Blocks.MELON_STEM, Blocks.REDSTONE_TORCH_OFF, Blocks.REDSTONE_COMPARATOR_OFF, Blocks.REDSTONE_WIRE, Blocks.WALL_SIGN, Blocks.DIODE_OFF, Blocks.IRON_DOOR_BLOCK, Blocks.WOODEN_DOOR});
-        Iterator iterator = Block.REGISTRY.b().iterator();
+        Iterator iterator = Block.REGISTRY.keySet().iterator();
 
         while (iterator.hasNext()) {
             String s = (String) iterator.next();
-            Block block = (Block) Block.REGISTRY.a(s);
+            Block block = (Block) Block.REGISTRY.get(s);
             Object object;
 
             if (block == Blocks.WOOL) {
@@ -296,7 +296,7 @@ public class Item {
                 object = new ItemBlock(block);
             }
 
-            REGISTRY.a(Block.b(block), s, object);
+            REGISTRY.a(Block.getId(block), s, object);
         }
     }
 
@@ -462,7 +462,7 @@ public class Item {
         double d0 = entityhuman.lastX + (entityhuman.locX - entityhuman.lastX) * (double) f;
         double d1 = entityhuman.lastY + (entityhuman.locY - entityhuman.lastY) * (double) f + 1.62D - (double) entityhuman.height;
         double d2 = entityhuman.lastZ + (entityhuman.locZ - entityhuman.lastZ) * (double) f;
-        Vec3D vec3d = world.getVec3DPool().create(d0, d1, d2);
+        Vec3D vec3d = Vec3D.a(d0, d1, d2);
         float f3 = MathHelper.cos(-f2 * 0.017453292F - 3.1415927F);
         float f4 = MathHelper.sin(-f2 * 0.017453292F - 3.1415927F);
         float f5 = -MathHelper.cos(-f1 * 0.017453292F);

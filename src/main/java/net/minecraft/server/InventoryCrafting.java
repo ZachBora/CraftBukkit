@@ -14,7 +14,7 @@ public class InventoryCrafting implements IInventory {
     private int b;
     private Container c;
 
-    // CraftBukkit start
+    // CraftBukkit start - add fields
     public List<HumanEntity> transaction = new java.util.ArrayList<HumanEntity>();
     public IRecipe currentRecipe;
     public IInventory resultInventory;
@@ -141,7 +141,7 @@ public class InventoryCrafting implements IInventory {
 
     public void startOpen() {}
 
-    public void l_() {}
+    public void closeContainer() {}
 
     public boolean b(int i, ItemStack itemstack) {
         return true;

@@ -37,7 +37,7 @@ public abstract class MobSpawnerAbstract {
         }
     }
 
-    public void a(String s) {
+    public void setMobName(String s) {
         this.mobName = s;
     }
 
@@ -81,7 +81,7 @@ public abstract class MobSpawnerAbstract {
                         return;
                     }
 
-                    int j = this.a().a(entity.getClass(), AxisAlignedBB.a().a((double) this.b(), (double) this.c(), (double) this.d(), (double) (this.b() + 1), (double) (this.c() + 1), (double) (this.d() + 1)).grow((double) (this.spawnRange * 2), 4.0D, (double) (this.spawnRange * 2))).size();
+                    int j = this.a().a(entity.getClass(), AxisAlignedBB.a((double) this.b(), (double) this.c(), (double) this.d(), (double) (this.b() + 1), (double) (this.c() + 1), (double) (this.d() + 1)).grow((double) (this.spawnRange * 2), 4.0D, (double) (this.spawnRange * 2))).size();
 
                     if (j >= this.maxNearbyEntities) {
                         this.j();
@@ -162,7 +162,7 @@ public abstract class MobSpawnerAbstract {
                 entity1 = entity2;
             }
         } else if (entity instanceof EntityLiving && entity.world != null) {
-            ((EntityInsentient) entity).a((GroupDataEntity) null);
+            ((EntityInsentient) entity).prepare((GroupDataEntity) null);
             this.a().addEntity(entity, CreatureSpawnEvent.SpawnReason.SPAWNER); // CraftBukkit
         }
 

@@ -2,6 +2,8 @@ package net.minecraft.server;
 
 import java.util.List;
 
+import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
+
 public abstract class EntityFireball extends Entity {
 
     private int e = -1;
@@ -10,7 +12,7 @@ public abstract class EntityFireball extends Entity {
     private Block h;
     private boolean i;
     public EntityLiving shooter;
-    private int j;
+    private int at;
     private int au;
     public double dirX;
     public double dirY;
@@ -40,6 +42,7 @@ public abstract class EntityFireball extends Entity {
     public EntityFireball(World world, EntityLiving entityliving, double d0, double d1, double d2) {
         super(world);
         this.shooter = entityliving;
+        this.projectileSource = (org.bukkit.entity.LivingEntity) entityliving.getBukkitEntity(); // CraftBukkit
         this.a(1.0F, 1.0F);
         this.setPositionRotation(entityliving.locX, entityliving.locY, entityliving.locZ, entityliving.yaw, entityliving.pitch);
         this.setPosition(this.locX, this.locY, this.locZ);
@@ -69,8 +72,8 @@ public abstract class EntityFireball extends Entity {
             this.setOnFire(1);
             if (this.i) {
                 if (this.world.getType(this.e, this.f, this.g) == this.h) {
-                    ++this.j;
-                    if (this.j == 600) {
+                    ++this.at;
+                    if (this.at == 600) {
                         this.die();
                     }
 
@@ -81,20 +84,20 @@ public abstract class EntityFireball extends Entity {
                 this.motX *= (double) (this.random.nextFloat() * 0.2F);
                 this.motY *= (double) (this.random.nextFloat() * 0.2F);
                 this.motZ *= (double) (this.random.nextFloat() * 0.2F);
-                this.j = 0;
+                this.at = 0;
                 this.au = 0;
             } else {
                 ++this.au;
             }
 
-            Vec3D vec3d = this.world.getVec3DPool().create(this.locX, this.locY, this.locZ);
-            Vec3D vec3d1 = this.world.getVec3DPool().create(this.locX + this.motX, this.locY + this.motY, this.locZ + this.motZ);
+            Vec3D vec3d = Vec3D.a(this.locX, this.locY, this.locZ);
+            Vec3D vec3d1 = Vec3D.a(this.locX + this.motX, this.locY + this.motY, this.locZ + this.motZ);
             MovingObjectPosition movingobjectposition = this.world.a(vec3d, vec3d1);
 
-            vec3d = this.world.getVec3DPool().create(this.locX, this.locY, this.locZ);
-            vec3d1 = this.world.getVec3DPool().create(this.locX + this.motX, this.locY + this.motY, this.locZ + this.motZ);
+            vec3d = Vec3D.a(this.locX, this.locY, this.locZ);
+            vec3d1 = Vec3D.a(this.locX + this.motX, this.locY + this.motY, this.locZ + this.motZ);
             if (movingobjectposition != null) {
-                vec3d1 = this.world.getVec3DPool().create(movingobjectposition.pos.c, movingobjectposition.pos.d, movingobjectposition.pos.e);
+                vec3d1 = Vec3D.a(movingobjectposition.pos.a, movingobjectposition.pos.b, movingobjectposition.pos.c);
             }
 
             Entity entity = null;
@@ -104,7 +107,7 @@ public abstract class EntityFireball extends Entity {
             for (int i = 0; i < list.size(); ++i) {
                 Entity entity1 = (Entity) list.get(i);
 
-                if (entity1.R() && (!entity1.h(this.shooter) || this.au >= 25)) {
+                if (entity1.R() && (!entity1.i(this.shooter) || this.au >= 25)) {
                     float f = 0.3F;
                     AxisAlignedBB axisalignedbb = entity1.boundingBox.grow((double) f, (double) f, (double) f);
                     MovingObjectPosition movingobjectposition1 = axisalignedbb.a(vec3d, vec3d1);
@@ -127,9 +130,9 @@ public abstract class EntityFireball extends Entity {
             if (movingobjectposition != null) {
                 this.a(movingobjectposition);
 
-                // CraftBukkit start
+                // CraftBukkit start - Fire ProjectileHitEvent
                 if (this.dead) {
-                    org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileHitEvent(this);
+                    CraftEventFactory.callProjectileHitEvent(this);
                 }
                 // CraftBukkit end
             }
@@ -192,7 +195,7 @@ public abstract class EntityFireball extends Entity {
         nbttagcompound.setShort("xTile", (short) this.e);
         nbttagcompound.setShort("yTile", (short) this.f);
         nbttagcompound.setShort("zTile", (short) this.g);
-        nbttagcompound.setByte("inTile", (byte) Block.b(this.h));
+        nbttagcompound.setByte("inTile", (byte) Block.getId(this.h));
         nbttagcompound.setByte("inGround", (byte) (this.i ? 1 : 0));
         // CraftBukkit - Fix direction being mismapped to invalid variables
         nbttagcompound.set("power", this.a(new double[] { this.dirX, this.dirY, this.dirZ}));
@@ -202,7 +205,7 @@ public abstract class EntityFireball extends Entity {
         this.e = nbttagcompound.getShort("xTile");
         this.f = nbttagcompound.getShort("yTile");
         this.g = nbttagcompound.getShort("zTile");
-        this.h = Block.e(nbttagcompound.getByte("inTile") & 255);
+        this.h = Block.getById(nbttagcompound.getByte("inTile") & 255);
         this.i = nbttagcompound.getByte("inGround") == 1;
         // CraftBukkit start - direction -> power
         if (nbttagcompound.hasKeyOfType("power", 9)) {
@@ -231,12 +234,18 @@ public abstract class EntityFireball extends Entity {
         } else {
             this.Q();
             if (damagesource.getEntity() != null) {
+                // CraftBukkit start
+                if (CraftEventFactory.handleNonLivingEntityDamageEvent(this, damagesource, f)) {
+                    return false;
+                }
+                // CraftBukkit end
+
                 Vec3D vec3d = damagesource.getEntity().ag();
 
                 if (vec3d != null) {
-                    this.motX = vec3d.c;
-                    this.motY = vec3d.d;
-                    this.motZ = vec3d.e;
+                    this.motX = vec3d.a;
+                    this.motY = vec3d.b;
+                    this.motZ = vec3d.c;
                     this.dirX = this.motX * 0.1D;
                     this.dirY = this.motY * 0.1D;
                     this.dirZ = this.motZ * 0.1D;
@@ -244,6 +253,7 @@ public abstract class EntityFireball extends Entity {
 
                 if (damagesource.getEntity() instanceof EntityLiving) {
                     this.shooter = (EntityLiving) damagesource.getEntity();
+                    this.projectileSource = (org.bukkit.projectiles.ProjectileSource) this.shooter.getBukkitEntity();
                 }
 
                 return true;

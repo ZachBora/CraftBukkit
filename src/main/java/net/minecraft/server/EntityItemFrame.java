@@ -14,7 +14,7 @@ public class EntityItemFrame extends EntityHanging {
     }
 
     protected void c() {
-        this.getDataWatcher().a(2, 5);
+        this.getDataWatcher().add(2, 5);
         this.getDataWatcher().a(3, Byte.valueOf((byte) 0));
     }
 
@@ -23,9 +23,8 @@ public class EntityItemFrame extends EntityHanging {
             return false;
         } else if (this.getItem() != null) {
             if (!this.world.isStatic) {
-                // CraftBukkit start
-                org.bukkit.event.entity.EntityDamageEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.handleEntityDamageEvent(this, damagesource, f);
-                if ((event != null && event.isCancelled()) || this.dead) {
+                // CraftBukkit start - fire EntityDamageEvent
+                if (org.bukkit.craftbukkit.event.CraftEventFactory.handleNonLivingEntityDamageEvent(this, damagesource, f, false) || this.dead) {
                     return true;
                 }
                 // CraftBukkit end
@@ -80,7 +79,7 @@ public class EntityItemFrame extends EntityHanging {
             if (itemstack.getItem() == Items.MAP) {
                 WorldMap worldmap = ((ItemWorldMap) itemstack.getItem()).getSavedMap(itemstack, this.world);
 
-                worldmap.g.remove("frame-" + this.getId());
+                worldmap.decorations.remove("frame-" + this.getId());
             }
 
             itemstack.a((EntityItemFrame) null);
@@ -99,7 +98,7 @@ public class EntityItemFrame extends EntityHanging {
         }
 
         this.getDataWatcher().watch(2, itemstack);
-        this.getDataWatcher().h(2);
+        this.getDataWatcher().update(2);
     }
 
     public int getRotation() {

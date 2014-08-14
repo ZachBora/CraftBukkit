@@ -6,6 +6,7 @@ import java.util.Date;
 // CraftBukkit start
 import java.util.ArrayList;
 import org.apache.logging.log4j.Level;
+import org.bukkit.craftbukkit.command.VanillaCommandWrapper;
 import com.google.common.base.Joiner;
 // CraftBukkit end
 
@@ -60,11 +61,11 @@ public abstract class CommandBlockListenerAbstract implements ICommandListener {
         return i <= 2;
     }
 
-    public void a(String s) {
+    public void setCommand(String s) {
         this.e = s;
     }
 
-    public String i() {
+    public String getCommand() {
         return this.e;
     }
 
@@ -94,14 +95,23 @@ public abstract class CommandBlockListenerAbstract implements ICommandListener {
                 return;
             }
 
-            // Make sure this is a valid command
-            if (commandMap.getCommand(args[0]) == null) {
+            // If the world has no players don't run
+            if (this.getWorld().players.isEmpty()) {
                 this.b = 0;
                 return;
             }
 
-            // If the world has no players don't run
-            if (this.getWorld().players.isEmpty()) {
+            // Handle vanilla commands;
+            if (minecraftserver.server.getCommandBlockOverride(args[0])) {
+                org.bukkit.command.Command commandBlockCommand = commandMap.getCommand("minecraft:" + args[0]);
+                if (commandBlockCommand instanceof VanillaCommandWrapper) {
+                    this.b = ((VanillaCommandWrapper) commandBlockCommand).dispatchVanillaCommandBlock(this, this.e);
+                    return;
+                }
+            }
+
+            // Make sure this is a valid command
+            if (commandMap.getCommand(args[0]) == null) {
                 this.b = 0;
                 return;
             }
@@ -157,12 +167,12 @@ public abstract class CommandBlockListenerAbstract implements ICommandListener {
                 } catch (Throwable exception) {
                     if(this instanceof TileEntityCommandListener) {
                         TileEntityCommandListener listener = (TileEntityCommandListener) this;
-                        MinecraftServer.av().log(Level.WARN, String.format("CommandBlock at (%d,%d,%d) failed to handle command", listener.getChunkCoordinates().x, listener.getChunkCoordinates().y, listener.getChunkCoordinates().z), exception);
+                        MinecraftServer.getLogger().log(Level.WARN, String.format("CommandBlock at (%d,%d,%d) failed to handle command", listener.getChunkCoordinates().x, listener.getChunkCoordinates().y, listener.getChunkCoordinates().z), exception);
                     } else if (this instanceof EntityMinecartCommandBlockListener) {
                         EntityMinecartCommandBlockListener listener = (EntityMinecartCommandBlockListener) this;
-                        MinecraftServer.av().log(Level.WARN, String.format("MinecartCommandBlock at (%d,%d,%d) failed to handle command", listener.getChunkCoordinates().x, listener.getChunkCoordinates().y, listener.getChunkCoordinates().z), exception);
+                        MinecraftServer.getLogger().log(Level.WARN, String.format("MinecartCommandBlock at (%d,%d,%d) failed to handle command", listener.getChunkCoordinates().x, listener.getChunkCoordinates().y, listener.getChunkCoordinates().z), exception);
                     } else {
-                        MinecraftServer.av().log(Level.WARN, String.format("Unknown CommandBlock failed to handle command"), exception);
+                        MinecraftServer.getLogger().log(Level.WARN, String.format("Unknown CommandBlock failed to handle command"), exception);
                     }
                 }
             }
@@ -201,13 +211,13 @@ public abstract class CommandBlockListenerAbstract implements ICommandListener {
         return new ChatComponentText(this.getName());
     }
 
-    public void b(String s) {
+    public void setName(String s) {
         this.f = s;
     }
 
     public void sendMessage(IChatBaseComponent ichatbasecomponent) {
         if (this.c && this.getWorld() != null && !this.getWorld().isStatic) {
-            this.d = (new ChatComponentText("[" + a.format(new Date()) + "] ")).a(ichatbasecomponent);
+            this.d = (new ChatComponentText("[" + a.format(new Date()) + "] ")).addSibling(ichatbasecomponent);
             this.e();
         }
     }

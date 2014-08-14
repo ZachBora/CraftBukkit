@@ -101,7 +101,7 @@ public class TileEntity {
             this.g = this.world.getData(this.x, this.y, this.z);
             this.world.b(this.x, this.y, this.z, this);
             if (this.q() != Blocks.AIR) {
-                this.world.f(this.x, this.y, this.z, this.q());
+                this.world.updateAdjacentComparators(this.x, this.y, this.z, this.q());
             }
         }
     }
@@ -173,7 +173,7 @@ public class TileEntity {
         a(TileEntityFlowerPot.class, "FlowerPot");
     }
 
-    // CraftBukkit start
+    // CraftBukkit start - add method
     public InventoryHolder getOwner() {
         org.bukkit.block.BlockState state = world.getWorld().getBlockAt(x, y, z).getState();
         if (state instanceof InventoryHolder) return (InventoryHolder) state;

@@ -1,5 +1,7 @@
 package net.minecraft.server;
 
+import org.bukkit.event.entity.EntityCombustEvent; // CraftBukkit
+
 public class ItemBow extends Item {
 
     public static final String[] a = new String[] { "pulling_0", "pulling_1", "pulling_2"};
@@ -29,7 +31,7 @@ public class ItemBow extends Item {
             EntityArrow entityarrow = new EntityArrow(world, entityhuman, f * 2.0F);
 
             if (f == 1.0F) {
-                entityarrow.a(true);
+                entityarrow.setCritical(true);
             }
 
             int k = EnchantmentManager.getEnchantmentLevel(Enchantment.ARROW_DAMAGE.id, itemstack);
@@ -41,11 +43,18 @@ public class ItemBow extends Item {
             int l = EnchantmentManager.getEnchantmentLevel(Enchantment.ARROW_KNOCKBACK.id, itemstack);
 
             if (l > 0) {
-                entityarrow.a(l);
+                entityarrow.setKnockbackStrength(l);
             }
 
             if (EnchantmentManager.getEnchantmentLevel(Enchantment.ARROW_FIRE.id, itemstack) > 0) {
-                entityarrow.setOnFire(100);
+                // CraftBukkit start - call EntityCombustEvent
+                EntityCombustEvent event = new EntityCombustEvent(entityarrow.getBukkitEntity(), 100);
+                entityarrow.world.getServer().getPluginManager().callEvent(event);
+
+                if (!event.isCancelled()) {
+                    entityarrow.setOnFire(event.getDuration());
+                }
+                // CraftBukkit end
             }
 
             // CraftBukkit start

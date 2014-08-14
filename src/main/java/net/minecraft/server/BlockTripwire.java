@@ -76,7 +76,7 @@ public class BlockTripwire extends Block {
 
     public void a(World world, int i, int j, int k, int l, EntityHuman entityhuman) {
         if (!world.isStatic) {
-            if (entityhuman.bD() != null && entityhuman.bD().getItem() == Items.SHEARS) {
+            if (entityhuman.bF() != null && entityhuman.bF().getItem() == Items.SHEARS) {
                 world.setData(i, j, k, l | 8, 4);
             }
         }
@@ -132,7 +132,7 @@ public class BlockTripwire extends Block {
         int l = world.getData(i, j, k);
         boolean flag = (l & 1) == 1;
         boolean flag1 = false;
-        List list = world.getEntities((Entity) null, AxisAlignedBB.a().a((double) i + this.minX, (double) j + this.minY, (double) k + this.minZ, (double) i + this.maxX, (double) j + this.maxY, (double) k + this.maxZ));
+        List list = world.getEntities((Entity) null, AxisAlignedBB.a((double) i + this.minX, (double) j + this.minY, (double) k + this.minZ, (double) i + this.maxX, (double) j + this.maxY, (double) k + this.maxZ));
 
         if (!list.isEmpty()) {
             Iterator iterator = list.iterator();

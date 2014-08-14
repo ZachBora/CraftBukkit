@@ -36,7 +36,7 @@ public abstract class EntityMinecartAbstract extends Entity {
 
     public EntityMinecartAbstract(World world) {
         super(world);
-        this.l = true;
+        this.k = true;
         this.a(0.98F, 0.7F);
         this.height = this.length / 2.0F;
     }
@@ -79,7 +79,7 @@ public abstract class EntityMinecartAbstract extends Entity {
         this.datawatcher.a(22, Byte.valueOf((byte) 0));
     }
 
-    public AxisAlignedBB g(Entity entity) {
+    public AxisAlignedBB h(Entity entity) {
         return entity.S() ? entity.boundingBox : null;
     }
 
@@ -113,7 +113,7 @@ public abstract class EntityMinecartAbstract extends Entity {
             if (this.isInvulnerable()) {
                 return false;
             } else {
-                // CraftBukkit start
+                // CraftBukkit start - fire VehicleDamageEvent
                 Vehicle vehicle = (Vehicle) this.getBukkitEntity();
                 org.bukkit.entity.Entity passenger = (damagesource.getEntity() == null) ? null : damagesource.getEntity().getBukkitEntity();
 
@@ -209,10 +209,10 @@ public abstract class EntityMinecartAbstract extends Entity {
             MinecraftServer minecraftserver = ((WorldServer) this.world).getMinecraftServer();
 
             i = this.D();
-            if (this.ao) {
+            if (this.an) {
                 if (true || minecraftserver.getAllowNether()) { // CraftBukkit - multi-world should still allow teleport even if default vanilla nether disabled
-                    if (this.vehicle == null && this.ap++ >= i) {
-                        this.ap = i;
+                    if (this.vehicle == null && this.ao++ >= i) {
+                        this.ao = i;
                         this.portalCooldown = this.ai();
                         byte b0;
 
@@ -225,15 +225,15 @@ public abstract class EntityMinecartAbstract extends Entity {
                         this.b(b0);
                     }
 
-                    this.ao = false;
+                    this.an = false;
                 }
             } else {
-                if (this.ap > 0) {
-                    this.ap -= 4;
+                if (this.ao > 0) {
+                    this.ao -= 4;
                 }
 
-                if (this.ap < 0) {
-                    this.ap = 0;
+                if (this.ao < 0) {
+                    this.ao = 0;
                 }
             }
 
@@ -365,7 +365,7 @@ public abstract class EntityMinecartAbstract extends Entity {
         }
 
         if (this.onGround) {
-            // CraftBukkit start
+            // CraftBukkit start - replace magic numbers with our variables
             this.motX *= this.derailedX;
             this.motY *= this.derailedY;
             this.motZ *= this.derailedZ;
@@ -374,7 +374,7 @@ public abstract class EntityMinecartAbstract extends Entity {
 
         this.move(this.motX, this.motY, this.motZ);
         if (!this.onGround) {
-            // CraftBukkit start
+            // CraftBukkit start - replace magic numbers with our variables
             this.motX *= this.flyingX;
             this.motY *= this.flyingY;
             this.motZ *= this.flyingZ;
@@ -444,7 +444,7 @@ public abstract class EntityMinecartAbstract extends Entity {
         double d10;
 
         if (this.passenger != null && this.passenger instanceof EntityLiving) {
-            d7 = (double) ((EntityLiving) this.passenger).bf;
+            d7 = (double) ((EntityLiving) this.passenger).be;
             if (d7 > 0.0D) {
                 d8 = -Math.sin((double) (this.passenger.yaw * 3.1415927F / 180.0F));
                 d9 = Math.cos((double) (this.passenger.yaw * 3.1415927F / 180.0F));
@@ -530,7 +530,7 @@ public abstract class EntityMinecartAbstract extends Entity {
         Vec3D vec3d1 = this.a(this.locX, this.locY, this.locZ);
 
         if (vec3d1 != null && vec3d != null) {
-            double d14 = (vec3d.d - vec3d1.d) * 0.05D;
+            double d14 = (vec3d.b - vec3d1.b) * 0.05D;
 
             d6 = Math.sqrt(this.motX * this.motX + this.motZ * this.motZ);
             if (d6 > 0.0D) {
@@ -538,7 +538,7 @@ public abstract class EntityMinecartAbstract extends Entity {
                 this.motZ = this.motZ / d6 * (d6 + d14);
             }
 
-            this.setPosition(this.locX, vec3d1.d, this.locZ);
+            this.setPosition(this.locX, vec3d1.b, this.locZ);
         }
 
         int i1 = MathHelper.floor(this.locX);
@@ -575,7 +575,7 @@ public abstract class EntityMinecartAbstract extends Entity {
     }
 
     protected void i() {
-        if (this.passenger != null || !this.slowWhenEmpty) { // CraftBukkit
+        if (this.passenger != null || !this.slowWhenEmpty) { // CraftBukkit - add !this.slowWhenEmpty
             this.motX *= 0.996999979019165D;
             this.motY *= 0.0D;
             this.motZ *= 0.996999979019165D;
@@ -645,7 +645,7 @@ public abstract class EntityMinecartAbstract extends Entity {
                 d1 += 0.5D;
             }
 
-            return this.world.getVec3DPool().create(d0, d1, d2);
+            return Vec3D.a(d0, d1, d2);
         } else {
             return null;
         }
@@ -666,7 +666,7 @@ public abstract class EntityMinecartAbstract extends Entity {
     protected void b(NBTTagCompound nbttagcompound) {
         if (this.t()) {
             nbttagcompound.setBoolean("CustomDisplayTile", true);
-            nbttagcompound.setInt("DisplayTile", this.n().getMaterial() == Material.AIR ? 0 : Block.b(this.n()));
+            nbttagcompound.setInt("DisplayTile", this.n().getMaterial() == Material.AIR ? 0 : Block.getId(this.n()));
             nbttagcompound.setInt("DisplayData", this.p());
             nbttagcompound.setInt("DisplayOffset", this.r());
         }
@@ -714,15 +714,15 @@ public abstract class EntityMinecartAbstract extends Entity {
                     d1 *= d3;
                     d0 *= 0.10000000149011612D;
                     d1 *= 0.10000000149011612D;
-                    d0 *= (double) (1.0F - this.Z);
-                    d1 *= (double) (1.0F - this.Z);
+                    d0 *= (double) (1.0F - this.Y);
+                    d1 *= (double) (1.0F - this.Y);
                     d0 *= 0.5D;
                     d1 *= 0.5D;
                     if (entity instanceof EntityMinecartAbstract) {
                         double d4 = entity.locX - this.locX;
                         double d5 = entity.locZ - this.locZ;
-                        Vec3D vec3d = this.world.getVec3DPool().create(d4, 0.0D, d5).a();
-                        Vec3D vec3d1 = this.world.getVec3DPool().create((double) MathHelper.cos(this.yaw * 3.1415927F / 180.0F), 0.0D, (double) MathHelper.sin(this.yaw * 3.1415927F / 180.0F)).a();
+                        Vec3D vec3d = Vec3D.a(d4, 0.0D, d5).a();
+                        Vec3D vec3d1 = Vec3D.a((double) MathHelper.cos(this.yaw * 3.1415927F / 180.0F), 0.0D, (double) MathHelper.sin(this.yaw * 3.1415927F / 180.0F)).a();
                         double d6 = Math.abs(vec3d.b(vec3d1));
 
                         if (d6 < 0.800000011920929D) {
@@ -795,7 +795,7 @@ public abstract class EntityMinecartAbstract extends Entity {
         } else {
             int i = this.getDataWatcher().getInt(20) & '\uffff';
 
-            return Block.e(i);
+            return Block.getById(i);
         }
     }
 
@@ -825,7 +825,7 @@ public abstract class EntityMinecartAbstract extends Entity {
     }
 
     public void l(int i) {
-        this.getDataWatcher().watch(20, Integer.valueOf(Block.b(this.n()) & '\uffff' | i << 16));
+        this.getDataWatcher().watch(20, Integer.valueOf(Block.getId(this.n()) & '\uffff' | i << 16));
         this.a(true);
     }
 

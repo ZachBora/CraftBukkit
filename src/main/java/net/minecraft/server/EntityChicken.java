@@ -1,7 +1,5 @@
 package net.minecraft.server;
 
-import org.bukkit.craftbukkit.util.CraftMagicNumbers; // CraftBukkit
-
 public class EntityChicken extends EntityAnimal {
 
     public float bp;
@@ -10,6 +8,7 @@ public class EntityChicken extends EntityAnimal {
     public float bs;
     public float bt = 1.0F;
     public int bu;
+    public boolean bv;
 
     public EntityChicken(World world) {
         super(world);
@@ -31,11 +30,16 @@ public class EntityChicken extends EntityAnimal {
 
     protected void aD() {
         super.aD();
-        this.getAttributeInstance(GenericAttributes.a).setValue(4.0D);
+        this.getAttributeInstance(GenericAttributes.maxHealth).setValue(4.0D);
         this.getAttributeInstance(GenericAttributes.d).setValue(0.25D);
     }
 
     public void e() {
+        // CraftBukkit start
+        if (this.isChickenJockey()) {
+            this.persistent = !this.isTypeNotPersistent();
+        }
+        // CraftBukkit end
         super.e();
         this.bs = this.bp;
         this.br = this.bq;
@@ -58,7 +62,7 @@ public class EntityChicken extends EntityAnimal {
         }
 
         this.bp += this.bt * 2.0F;
-        if (!this.isBaby() && !this.world.isStatic && --this.bu <= 0) {
+        if (!this.world.isStatic && !this.isBaby() && !this.isChickenJockey() && --this.bu <= 0) {
             this.makeSound("mob.chicken.plop", 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
             this.a(Items.EGG, 1);
             this.bu = this.random.nextInt(6000) + 6000;
@@ -88,22 +92,17 @@ public class EntityChicken extends EntityAnimal {
     }
 
     protected void dropDeathLoot(boolean flag, int i) {
-        // CraftBukkit start - Whole method
-        java.util.List<org.bukkit.inventory.ItemStack> loot = new java.util.ArrayList<org.bukkit.inventory.ItemStack>();
         int j = this.random.nextInt(3) + this.random.nextInt(1 + i);
 
-        if (j > 0) {
-            loot.add(new org.bukkit.inventory.ItemStack(CraftMagicNumbers.getMaterial(Items.FEATHER), j));
+        for (int k = 0; k < j; ++k) {
+            this.a(Items.FEATHER, 1);
         }
 
         if (this.isBurning()) {
-            loot.add(new org.bukkit.inventory.ItemStack(CraftMagicNumbers.getMaterial(Items.COOKED_CHICKEN), 1));
+            this.a(Items.COOKED_CHICKEN, 1);
         } else {
-            loot.add(new org.bukkit.inventory.ItemStack(CraftMagicNumbers.getMaterial(Items.RAW_CHICKEN), 1));
+            this.a(Items.RAW_CHICKEN, 1);
         }
-
-        org.bukkit.craftbukkit.event.CraftEventFactory.callEntityDeathEvent(this, loot);
-        // CraftBukkit end
     }
 
     public EntityChicken b(EntityAgeable entityageable) {
@@ -112,6 +111,45 @@ public class EntityChicken extends EntityAnimal {
 
     public boolean c(ItemStack itemstack) {
         return itemstack != null && itemstack.getItem() instanceof ItemSeeds;
+    }
+
+    public void a(NBTTagCompound nbttagcompound) {
+        super.a(nbttagcompound);
+        this.bv = nbttagcompound.getBoolean("IsChickenJockey");
+    }
+
+    protected int getExpValue(EntityHuman entityhuman) {
+        return this.isChickenJockey() ? 10 : super.getExpValue(entityhuman);
+    }
+
+    public void b(NBTTagCompound nbttagcompound) {
+        super.b(nbttagcompound);
+        nbttagcompound.setBoolean("IsChickenJockey", this.bv);
+    }
+
+    protected boolean isTypeNotPersistent() {
+        return this.isChickenJockey() && this.passenger == null;
+    }
+
+    public void ac() {
+        super.ac();
+        float f = MathHelper.sin(this.aM * 3.1415927F / 180.0F);
+        float f1 = MathHelper.cos(this.aM * 3.1415927F / 180.0F);
+        float f2 = 0.1F;
+        float f3 = 0.0F;
+
+        this.passenger.setPosition(this.locX + (double) (f2 * f), this.locY + (double) (this.length * 0.5F) + this.passenger.ad() + (double) f3, this.locZ - (double) (f2 * f1));
+        if (this.passenger instanceof EntityLiving) {
+            ((EntityLiving) this.passenger).aM = this.aM;
+        }
+    }
+
+    public boolean isChickenJockey() {
+        return this.bv;
+    }
+
+    public void i(boolean flag) {
+        this.bv = flag;
     }
 
     public EntityAgeable createChild(EntityAgeable entityageable) {

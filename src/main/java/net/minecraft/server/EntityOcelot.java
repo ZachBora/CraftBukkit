@@ -48,7 +48,7 @@ public class EntityOcelot extends EntityTameableAnimal {
     }
 
     protected boolean isTypeNotPersistent() {
-        return !this.isTamed(); // CraftBukkit
+        return !this.isTamed() /*&& this.ticksLived > 2400*/; // CraftBukkit
     }
 
     public boolean bk() {
@@ -57,7 +57,7 @@ public class EntityOcelot extends EntityTameableAnimal {
 
     protected void aD() {
         super.aD();
-        this.getAttributeInstance(GenericAttributes.a).setValue(10.0D);
+        this.getAttributeInstance(GenericAttributes.maxHealth).setValue(10.0D);
         this.getAttributeInstance(GenericAttributes.d).setValue(0.30000001192092896D);
     }
 
@@ -74,7 +74,7 @@ public class EntityOcelot extends EntityTameableAnimal {
     }
 
     protected String t() {
-        return this.isTamed() ? (this.cc() ? "mob.cat.purr" : (this.random.nextInt(4) == 0 ? "mob.cat.purreow" : "mob.cat.meow")) : "";
+        return this.isTamed() ? (this.ce() ? "mob.cat.purr" : (this.random.nextInt(4) == 0 ? "mob.cat.purreow" : "mob.cat.meow")) : "";
     }
 
     protected String aT() {
@@ -93,7 +93,7 @@ public class EntityOcelot extends EntityTameableAnimal {
         return Items.LEATHER;
     }
 
-    public boolean m(Entity entity) {
+    public boolean n(Entity entity) {
         return entity.damageEntity(DamageSource.mobAttack(this), 3.0F);
     }
 
@@ -106,18 +106,16 @@ public class EntityOcelot extends EntityTameableAnimal {
         }
     }
 
-    protected void dropDeathLoot(boolean flag, int i) {
-        org.bukkit.craftbukkit.event.CraftEventFactory.callEntityDeathEvent(this); // CraftBukkit - Call EntityDeathEvent
-    }
+    protected void dropDeathLoot(boolean flag, int i) {}
 
     public boolean a(EntityHuman entityhuman) {
         ItemStack itemstack = entityhuman.inventory.getItemInHand();
 
         if (this.isTamed()) {
-            if (entityhuman.getName().equalsIgnoreCase(this.getOwnerName()) && !this.world.isStatic && !this.c(itemstack)) {
+            if (this.e(entityhuman) && !this.world.isStatic && !this.c(itemstack)) {
                 this.bp.setSitting(!this.isSitting());
             }
-        } else if (this.bq.f() && itemstack != null && itemstack.getItem() == Items.RAW_FISH && entityhuman.e(this) < 9.0D) {
+        } else if (this.bq.f() && itemstack != null && itemstack.getItem() == Items.RAW_FISH && entityhuman.f(this) < 9.0D) {
             if (!entityhuman.abilities.canInstantlyBuild) {
                 --itemstack.count;
             }
@@ -131,7 +129,7 @@ public class EntityOcelot extends EntityTameableAnimal {
                 if (this.random.nextInt(3) == 0 && !org.bukkit.craftbukkit.event.CraftEventFactory.callEntityTameEvent(this, entityhuman).isCancelled()) {
                     this.setTamed(true);
                     this.setCatType(1 + this.world.random.nextInt(3));
-                    this.setOwnerName(entityhuman.getName());
+                    this.setOwnerUUID(entityhuman.getUniqueID().toString());
                     this.i(true);
                     this.bp.setSitting(true);
                     this.world.broadcastEntityEffect(this, (byte) 7);
@@ -151,7 +149,7 @@ public class EntityOcelot extends EntityTameableAnimal {
         EntityOcelot entityocelot = new EntityOcelot(this.world);
 
         if (this.isTamed()) {
-            entityocelot.setOwnerName(this.getOwnerName());
+            entityocelot.setOwnerUUID(this.getOwnerUUID());
             entityocelot.setTamed(true);
             entityocelot.setCatType(this.getCatType());
         }
@@ -173,7 +171,7 @@ public class EntityOcelot extends EntityTameableAnimal {
         } else {
             EntityOcelot entityocelot = (EntityOcelot) entityanimal;
 
-            return !entityocelot.isTamed() ? false : this.cc() && entityocelot.cc();
+            return !entityocelot.isTamed() ? false : this.ce() && entityocelot.ce();
         }
     }
 
@@ -213,15 +211,15 @@ public class EntityOcelot extends EntityTameableAnimal {
         return this.hasCustomName() ? this.getCustomName() : (this.isTamed() ? LocaleI18n.get("entity.Cat.name") : super.getName());
     }
 
-    public GroupDataEntity a(GroupDataEntity groupdataentity) {
-        groupdataentity = super.a(groupdataentity);
+    public GroupDataEntity prepare(GroupDataEntity groupdataentity) {
+        groupdataentity = super.prepare(groupdataentity);
         if (this.world.random.nextInt(7) == 0) {
             for (int i = 0; i < 2; ++i) {
                 EntityOcelot entityocelot = new EntityOcelot(this.world);
 
                 entityocelot.setPositionRotation(this.locX, this.locY, this.locZ, this.yaw, 0.0F);
                 entityocelot.setAge(-24000);
-                this.world.addEntity(entityocelot);
+                this.world.addEntity(entityocelot, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.OCELOT_BABY); // CraftBukkit - add SpawnReason
             }
         }
 

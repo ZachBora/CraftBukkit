@@ -17,11 +17,11 @@ public class TileEntityBrewingStand extends TileEntity implements IWorldInventor
     private int l;
     private Item m;
     private String n;
-    private int lastTick = MinecraftServer.currentTick; // CraftBukkit
+    private int lastTick = MinecraftServer.currentTick; // CraftBukkit - add field
 
     public TileEntityBrewingStand() {}
 
-    // CraftBukkit start
+    // CraftBukkit start - add fields and methods
     public List<HumanEntity> transaction = new java.util.ArrayList<HumanEntity>();
     private int maxStack = 64;
 
@@ -265,7 +265,7 @@ public class TileEntityBrewingStand extends TileEntity implements IWorldInventor
 
     public void startOpen() {}
 
-    public void l_() {}
+    public void closeContainer() {}
 
     public boolean b(int i, ItemStack itemstack) {
         return i == 3 ? itemstack.getItem().m(itemstack) : itemstack.getItem() == Items.POTION || itemstack.getItem() == Items.GLASS_BOTTLE;

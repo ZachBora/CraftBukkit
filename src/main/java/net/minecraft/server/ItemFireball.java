@@ -1,5 +1,10 @@
 package net.minecraft.server;
 
+// CraftBukkit start
+import org.bukkit.craftbukkit.block.CraftBlockState;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+// CraftBukkit end
+
 public class ItemFireball extends Item {
 
     public ItemFireball() {
@@ -38,7 +43,7 @@ public class ItemFireball extends Item {
                 return false;
             } else {
                 if (world.getType(i, j, k).getMaterial() == Material.AIR) {
-                    // CraftBukkit start
+                    // CraftBukkit start - fire BlockIgniteEvent
                     if (org.bukkit.craftbukkit.event.CraftEventFactory.callBlockIgniteEvent(world, i, j, k, org.bukkit.event.block.BlockIgniteEvent.IgniteCause.FIREBALL, entityhuman).isCancelled()) {
                         if (!entityhuman.abilities.canInstantlyBuild) {
                             --itemstack.count;

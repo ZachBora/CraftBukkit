@@ -10,6 +10,7 @@ import net.minecraft.server.BlockCocoa;
 import net.minecraft.server.BlockRedstoneWire;
 import net.minecraft.server.Blocks;
 import net.minecraft.server.EnumSkyBlock;
+import net.minecraft.server.GameProfileSerializer;
 import net.minecraft.server.Item;
 import net.minecraft.server.NBTTagCompound;
 import net.minecraft.server.TileEntitySkull;
@@ -380,7 +381,7 @@ public class CraftBlock implements Block {
 
     private boolean itemCausesDrops(ItemStack item) {
         net.minecraft.server.Block block = this.getNMSBlock();
-        net.minecraft.server.Item itemType = item != null ? net.minecraft.server.Item.d(item.getTypeId()) : null;
+        net.minecraft.server.Item itemType = item != null ? net.minecraft.server.Item.getById(item.getTypeId()) : null;
         return block != null && (block.getMaterial().isAlwaysDestroyable() || (itemType != null && itemType.canDestroySpecialBlock(block)));
     }
 
@@ -423,9 +424,12 @@ public class CraftBlock implements Block {
                         net.minecraft.server.ItemStack nmsStack = new net.minecraft.server.ItemStack(item, 1, block.getDropData(chunk.getHandle().world, x, y, z));
                         TileEntitySkull tileentityskull = (TileEntitySkull) chunk.getHandle().world.getTileEntity(x, y, z);
 
-                        if (tileentityskull.getSkullType() == 3 && tileentityskull.getExtraType() != null && tileentityskull.getExtraType().length() > 0) {
+                        if (tileentityskull.getSkullType() == 3 && tileentityskull.getGameProfile() != null) {
                             nmsStack.setTag(new NBTTagCompound());
-                            nmsStack.getTag().setString("SkullOwner", tileentityskull.getExtraType());
+                            NBTTagCompound nbttagcompound = new NBTTagCompound();
+
+                            GameProfileSerializer.serialize(nbttagcompound, tileentityskull.getGameProfile());
+                            nmsStack.getTag().set("SkullOwner", nbttagcompound);
                         }
 
                         drops.add(CraftItemStack.asBukkitCopy(nmsStack));
@@ -454,7 +458,7 @@ public class CraftBlock implements Block {
 
     /* Build biome index based lookup table for BiomeBase to Biome mapping */
     static {
-        BIOME_MAPPING = new Biome[BiomeBase.n().length];
+        BIOME_MAPPING = new Biome[BiomeBase.getBiomes().length];
         BIOMEBASE_MAPPING = new BiomeBase[Biome.values().length];
         BIOME_MAPPING[BiomeBase.OCEAN.id] = Biome.OCEAN;
         BIOME_MAPPING[BiomeBase.PLAINS.id] = Biome.PLAINS;

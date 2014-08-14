@@ -235,7 +235,7 @@ class CraftMetaItem implements ItemMeta, Repairable {
                 lore = new ArrayList<String>(list.size());
 
                 for (int index = 0; index < list.size(); index++) {
-                    String line = list.f(index);
+                    String line = list.getString(index);
                     lore.add(line);
                 }
             }
@@ -421,7 +421,7 @@ class CraftMetaItem implements ItemMeta, Repairable {
 
     @Overridden
     boolean isEmpty() {
-        return !(hasDisplayName() || hasEnchants() || hasLore() || hasAttributes());
+        return !(hasDisplayName() || hasEnchants() || hasLore() || hasAttributes() || hasRepairCost());
     }
 
     public String getDisplayName() {

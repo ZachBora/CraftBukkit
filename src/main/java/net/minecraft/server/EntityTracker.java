@@ -19,7 +19,7 @@ public class EntityTracker {
 
     public EntityTracker(WorldServer worldserver) {
         this.world = worldserver;
-        this.e = worldserver.getMinecraftServer().getPlayerList().a();
+        this.e = worldserver.getMinecraftServer().getPlayerList().d();
     }
 
     public void track(Entity entity) {
@@ -203,7 +203,7 @@ public class EntityTracker {
         while (iterator.hasNext()) {
             EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry) iterator.next();
 
-            if (entitytrackerentry.tracker != entityplayer && entitytrackerentry.tracker.ai == chunk.locX && entitytrackerentry.tracker.ak == chunk.locZ) {
+            if (entitytrackerentry.tracker != entityplayer && entitytrackerentry.tracker.ah == chunk.locX && entitytrackerentry.tracker.aj == chunk.locZ) {
                 entitytrackerentry.updatePlayer(entityplayer);
             }
         }

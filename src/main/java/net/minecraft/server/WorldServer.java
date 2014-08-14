@@ -9,6 +9,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 
+import net.minecraft.util.com.google.common.collect.Lists;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -21,9 +22,9 @@ import org.bukkit.event.block.BlockFormEvent;
 import org.bukkit.event.weather.LightningStrikeEvent;
 import org.bukkit.event.weather.ThunderChangeEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
+// CraftBukkit end
 
-public class WorldServer extends World implements org.bukkit.BlockChangeDelegate {
-    // CraftBukkit end
+public class WorldServer extends World {
 
     private static final Logger a = LogManager.getLogger();
     private final MinecraftServer server;
@@ -37,7 +38,7 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
     private int emptyTime;
     private final PortalTravelAgent Q;
     private final SpawnerCreature R = new SpawnerCreature();
-    private NoteDataList[] S = new NoteDataList[] { new NoteDataList((EmptyClass2) null), new NoteDataList((EmptyClass2) null)};
+    private BlockActionDataList[] S = new BlockActionDataList[] { new BlockActionDataList((BananaAPI) null), new BlockActionDataList((BananaAPI) null)};
     private int T;
     private static final StructurePieceTreasure[] U = new StructurePieceTreasure[] { new StructurePieceTreasure(Items.STICK, 0, 1, 3, 10), new StructurePieceTreasure(Item.getItemOf(Blocks.WOOD), 0, 1, 3, 10), new StructurePieceTreasure(Item.getItemOf(Blocks.LOG), 0, 1, 3, 10), new StructurePieceTreasure(Items.STONE_AXE, 0, 1, 1, 3), new StructurePieceTreasure(Items.WOOD_AXE, 0, 1, 1, 5), new StructurePieceTreasure(Items.STONE_PICKAXE, 0, 1, 1, 3), new StructurePieceTreasure(Items.WOOD_PICKAXE, 0, 1, 1, 5), new StructurePieceTreasure(Items.APPLE, 0, 2, 3, 5), new StructurePieceTreasure(Items.BREAD, 0, 2, 3, 3), new StructurePieceTreasure(Item.getItemOf(Blocks.LOG2), 0, 1, 3, 10)};
     private List V = new ArrayList();
@@ -54,7 +55,7 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
         // CraftBukkit end
         this.server = minecraftserver;
         this.tracker = new EntityTracker(this);
-        this.manager = new PlayerChunkMap(this, minecraftserver.getPlayerList().o());
+        this.manager = new PlayerChunkMap(this);
         if (this.entitiesById == null) {
             this.entitiesById = new IntHashMap();
         }
@@ -140,7 +141,7 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
     }
 
     private TileEntity fixTileEntity(int x, int y, int z, Block type, TileEntity found) {
-        this.getServer().getLogger().severe("Block at " + x + "," + y + "," + z + " is " + org.bukkit.Material.getMaterial(Block.b(type)).toString() + " but has " + found + ". "
+        this.getServer().getLogger().severe("Block at " + x + "," + y + "," + z + " is " + org.bukkit.Material.getMaterial(Block.getId(type)).toString() + " but has " + found + ". "
                 + "Bukkit will attempt to fix this, but there may be additional damage that we cannot recover.");
 
         if (type instanceof IContainer) {
@@ -219,7 +220,7 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
     }
 
     public BiomeMeta a(EnumCreatureType enumcreaturetype, int i, int j, int k) {
-        List list = this.K().getMobsFor(enumcreaturetype, i, j, k);
+        List list = this.L().getMobsFor(enumcreaturetype, i, j, k);
 
         return list != null && !list.isEmpty() ? (BiomeMeta) WeightedRandom.a(this.random, (Collection) list) : null;
     }
@@ -326,7 +327,7 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
             int k1;
             int l1;
 
-            if (this.random.nextInt(100000) == 0 && this.P() && this.O()) {
+            if (this.random.nextInt(100000) == 0 && this.Q() && this.P()) {
                 this.k = this.k * 3 + 1013904223;
                 i1 = this.k >> 2;
                 j1 = k + (i1 & 15);
@@ -347,7 +348,7 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
                 if (this.s(j1 + k, l1 - 1, k1 + l)) {
                     // CraftBukkit start
                     BlockState blockState = this.getWorld().getBlockAt(j1 + k, l1 - 1, k1 + l).getState();
-                    blockState.setTypeId(Block.b(Blocks.ICE));
+                    blockState.setTypeId(Block.getId(Blocks.ICE));
 
                     BlockFormEvent iceBlockForm = new BlockFormEvent(blockState.getBlock(), blockState);
                     this.getServer().getPluginManager().callEvent(iceBlockForm);
@@ -357,10 +358,10 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
                     // CraftBukkit end
                 }
 
-                if (this.P() && this.e(j1 + k, l1, k1 + l, true)) {
+                if (this.Q() && this.e(j1 + k, l1, k1 + l, true)) {
                     // CraftBukkit start
                     BlockState blockState = this.getWorld().getBlockAt(j1 + k, l1, k1 + l).getState();
-                    blockState.setTypeId(Block.b(Blocks.SNOW));
+                    blockState.setTypeId(Block.getId(Blocks.SNOW));
 
                     BlockFormEvent snow = new BlockFormEvent(blockState.getBlock(), blockState);
                     this.getServer().getPluginManager().callEvent(snow);
@@ -370,7 +371,7 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
                     // CraftBukkit end
                 }
 
-                if (this.P()) {
+                if (this.Q()) {
                     BiomeBase biomebase = this.getBiome(j1 + k, k1 + l);
 
                     if (biomebase.e()) {
@@ -380,7 +381,7 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
             }
 
             this.methodProfiler.c("tickBlocks");
-            ChunkSection[] achunksection = chunk.i();
+            ChunkSection[] achunksection = chunk.getSections();
 
             j1 = achunksection.length;
 
@@ -743,7 +744,7 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
             int k = this.worldData.e() + this.random.nextInt(6) - this.random.nextInt(6);
             int l = this.i(j, k) + 1;
 
-            if (worldgenbonuschest.a(this, this.random, j, l, k)) {
+            if (worldgenbonuschest.generate(this, this.random, j, l, k)) {
                 break;
             }
         }
@@ -765,18 +766,29 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
             }
 
             this.chunkProvider.saveChunks(flag, iprogressupdate);
+            // CraftBukkit - ArrayList -> Collection
+            Collection arraylist = this.chunkProviderServer.a();
+            Iterator iterator = arraylist.iterator();
+
+            while (iterator.hasNext()) {
+                Chunk chunk = (Chunk) iterator.next();
+
+                if (chunk != null && !this.manager.a(chunk.locX, chunk.locZ)) {
+                    this.chunkProviderServer.queueUnload(chunk.locX, chunk.locZ);
+                }
+            }
         }
     }
 
     public void flushSave() {
         if (this.chunkProvider.canSave()) {
-            this.chunkProvider.b();
+            this.chunkProvider.c();
         }
     }
 
     protected void a() throws ExceptionWorldConflict { // CraftBukkit - added throws
-        this.F();
-        this.dataManager.saveWorldData(this.worldData, this.server.getPlayerList().q());
+        this.G();
+        this.dataManager.saveWorldData(this.worldData, this.server.getPlayerList().t());
         // CraftBukkit start - save worldMaps once, rather than once per shared world
         if (!(this instanceof SecondaryWorldServer)) {
             this.worldMaps.a();
@@ -867,20 +879,20 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
         return explosion;
     }
 
-    public void playNote(int i, int j, int k, Block block, int l, int i1) {
-        NoteBlockData noteblockdata = new NoteBlockData(i, j, k, block, l, i1);
+    public void playBlockAction(int i, int j, int k, Block block, int l, int i1) {
+        BlockActionData blockactiondata = new BlockActionData(i, j, k, block, l, i1);
         Iterator iterator = this.S[this.T].iterator();
 
-        NoteBlockData noteblockdata1;
+        BlockActionData blockactiondata1;
 
         do {
             if (!iterator.hasNext()) {
-                this.S[this.T].add(noteblockdata);
+                this.S[this.T].add(blockactiondata);
                 return;
             }
 
-            noteblockdata1 = (NoteBlockData) iterator.next();
-        } while (!noteblockdata1.equals(noteblockdata));
+            blockactiondata1 = (BlockActionData) iterator.next();
+        } while (!blockactiondata1.equals(blockactiondata));
 
     }
 
@@ -892,11 +904,11 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
             Iterator iterator = this.S[i].iterator();
 
             while (iterator.hasNext()) {
-                NoteBlockData noteblockdata = (NoteBlockData) iterator.next();
+                BlockActionData blockactiondata = (BlockActionData) iterator.next();
 
-                if (this.a(noteblockdata)) {
+                if (this.a(blockactiondata)) {
                     // CraftBukkit - this.worldProvider.dimension -> this.dimension
-                    this.server.getPlayerList().sendPacketNearby((double) noteblockdata.a(), (double) noteblockdata.b(), (double) noteblockdata.c(), 64.0D, this.dimension, new PacketPlayOutBlockAction(noteblockdata.a(), noteblockdata.b(), noteblockdata.c(), noteblockdata.f(), noteblockdata.d(), noteblockdata.e()));
+                    this.server.getPlayerList().sendPacketNearby((double) blockactiondata.a(), (double) blockactiondata.b(), (double) blockactiondata.c(), 64.0D, this.dimension, new PacketPlayOutBlockAction(blockactiondata.a(), blockactiondata.b(), blockactiondata.c(), blockactiondata.f(), blockactiondata.d(), blockactiondata.e()));
                 }
             }
 
@@ -904,10 +916,10 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
         }
     }
 
-    private boolean a(NoteBlockData noteblockdata) {
-        Block block = this.getType(noteblockdata.a(), noteblockdata.b(), noteblockdata.c());
+    private boolean a(BlockActionData blockactiondata) {
+        Block block = this.getType(blockactiondata.a(), blockactiondata.b(), blockactiondata.c());
 
-        return block == noteblockdata.f() ? block.a(this, noteblockdata.a(), noteblockdata.b(), noteblockdata.c(), noteblockdata.d(), noteblockdata.e()) : false;
+        return block == blockactiondata.f() ? block.a(this, blockactiondata.a(), blockactiondata.b(), blockactiondata.c(), blockactiondata.d(), blockactiondata.e()) : false;
     }
 
     public void saveLevel() {
@@ -915,7 +927,7 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
     }
 
     protected void o() {
-        boolean flag = this.P();
+        boolean flag = this.Q();
 
         super.o();
         /* CraftBukkit start
@@ -927,7 +939,7 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
             this.server.getPlayerList().a(new PacketPlayOutGameStateChange(8, this.p), this.worldProvider.dimension);
         }
 
-        if (flag != this.P()) {
+        if (flag != this.Q()) {
             if (flag) {
                 this.server.getPlayerList().sendAll(new PacketPlayOutGameStateChange(2, 0.0F));
             } else {
@@ -938,7 +950,7 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
             this.server.getPlayerList().sendAll(new PacketPlayOutGameStateChange(8, this.p));
         }
         // */
-        if (flag != this.P()) {
+        if (flag != this.Q()) {
             // Only send weather packets to those affected
             for (int i = 0; i < this.players.size(); ++i) {
                 if (((EntityPlayer) this.players.get(i)).world == this) {
@@ -947,6 +959,10 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
             }
             // CraftBukkit end
         }
+    }
+
+    protected int p() {
+        return this.server.getPlayerList().s();
     }
 
     public MinecraftServer getMinecraftServer() {
@@ -961,7 +977,7 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
         return this.manager;
     }
 
-    public PortalTravelAgent t() {
+    public PortalTravelAgent getTravelAgent() {
         return this.Q;
     }
 
@@ -982,25 +998,9 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
         }
     }
 
-    // CraftBukkit start - Compatibility methods for BlockChangeDelegate
-    public boolean setRawTypeId(int x, int y, int z, int typeId) {
-        return this.setTypeAndData(x, y, z, Block.e(typeId), 0, 4);
-    }
-
-    public boolean setRawTypeIdAndData(int x, int y, int z, int typeId, int data) {
-        return this.setTypeAndData(x, y, z, Block.e(typeId), data, 4);
-    }
-
-    public boolean setTypeId(int x, int y, int z, int typeId) {
-        return this.setTypeAndData(x, y, z, Block.e(typeId), 0, 3);
-    }
-
-    public boolean setTypeIdAndData(int x, int y, int z, int typeId, int data) {
-        return this.setTypeAndData(x, y, z, Block.e(typeId), data, 3);
-    }
-
+    // CraftBukkit start - Helper method
     public int getTypeId(int x, int y, int z) {
-        return Block.b(getType(x, y, z));
+        return Block.getId(getType(x, y, z));
     }
     // CraftBukkit end
 }

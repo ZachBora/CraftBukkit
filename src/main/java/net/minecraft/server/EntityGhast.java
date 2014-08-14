@@ -2,7 +2,6 @@ package net.minecraft.server;
 
 // CraftBukkit start
 import org.bukkit.craftbukkit.entity.CraftEntity;
-import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.event.entity.EntityTargetEvent;
 // CraftBukkit end
 
@@ -10,7 +9,7 @@ public class EntityGhast extends EntityFlying implements IMonster {
 
     public int h;
     public double i;
-    public double j;
+    public double bm;
     public double bn;
     private Entity target;
     private int br;
@@ -44,7 +43,7 @@ public class EntityGhast extends EntityFlying implements IMonster {
 
     protected void aD() {
         super.aD();
-        this.getAttributeInstance(GenericAttributes.a).setValue(10.0D);
+        this.getAttributeInstance(GenericAttributes.maxHealth).setValue(10.0D);
     }
 
     protected void bq() {
@@ -55,32 +54,32 @@ public class EntityGhast extends EntityFlying implements IMonster {
         this.w();
         this.bo = this.bp;
         double d0 = this.i - this.locX;
-        double d1 = this.j - this.locY;
+        double d1 = this.bm - this.locY;
         double d2 = this.bn - this.locZ;
         double d3 = d0 * d0 + d1 * d1 + d2 * d2;
 
         if (d3 < 1.0D || d3 > 3600.0D) {
             this.i = this.locX + (double) ((this.random.nextFloat() * 2.0F - 1.0F) * 16.0F);
-            this.j = this.locY + (double) ((this.random.nextFloat() * 2.0F - 1.0F) * 16.0F);
+            this.bm = this.locY + (double) ((this.random.nextFloat() * 2.0F - 1.0F) * 16.0F);
             this.bn = this.locZ + (double) ((this.random.nextFloat() * 2.0F - 1.0F) * 16.0F);
         }
 
         if (this.h-- <= 0) {
             this.h += this.random.nextInt(5) + 2;
             d3 = (double) MathHelper.sqrt(d3);
-            if (this.a(this.i, this.j, this.bn, d3)) {
+            if (this.a(this.i, this.bm, this.bn, d3)) {
                 this.motX += d0 / d3 * 0.1D;
                 this.motY += d1 / d3 * 0.1D;
                 this.motZ += d2 / d3 * 0.1D;
             } else {
                 this.i = this.locX;
-                this.j = this.locY;
+                this.bm = this.locY;
                 this.bn = this.locZ;
             }
         }
 
         if (this.target != null && this.target.dead) {
-            // CraftBukkit start
+            // CraftBukkit start - fire EntityTargetEvent
             EntityTargetEvent event = new EntityTargetEvent(this.getBukkitEntity(), null, EntityTargetEvent.TargetReason.TARGET_DIED);
             this.world.getServer().getPluginManager().callEvent(event);
 
@@ -95,7 +94,7 @@ public class EntityGhast extends EntityFlying implements IMonster {
         }
 
         if (this.target == null || this.br-- <= 0) {
-            // CraftBukkit start
+            // CraftBukkit start - fire EntityTargetEvent
             Entity target = this.world.findNearbyVulnerablePlayer(this, 100.0D);
             if (target != null) {
                 EntityTargetEvent event = new EntityTargetEvent(this.getBukkitEntity(), target.getBukkitEntity(), EntityTargetEvent.TargetReason.CLOSEST_PLAYER);
@@ -118,13 +117,13 @@ public class EntityGhast extends EntityFlying implements IMonster {
 
         double d4 = 64.0D;
 
-        if (this.target != null && this.target.e((Entity) this) < d4 * d4) {
+        if (this.target != null && this.target.f((Entity) this) < d4 * d4) {
             double d5 = this.target.locX - this.locX;
             double d6 = this.target.boundingBox.b + (double) (this.target.length / 2.0F) - (this.locY + (double) (this.length / 2.0F));
             double d7 = this.target.locZ - this.locZ;
 
-            this.aN = this.yaw = -((float) Math.atan2(d5, d7)) * 180.0F / 3.1415927F;
-            if (this.o(this.target)) {
+            this.aM = this.yaw = -((float) Math.atan2(d5, d7)) * 180.0F / 3.1415927F;
+            if (this.hasLineOfSight(this.target)) {
                 if (this.bp == 10) {
                     this.world.a((EntityHuman) null, 1007, (int) this.locX, (int) this.locY, (int) this.locZ, 0);
                 }
@@ -139,9 +138,9 @@ public class EntityGhast extends EntityFlying implements IMonster {
                     double d8 = 4.0D;
                     Vec3D vec3d = this.j(1.0F);
 
-                    entitylargefireball.locX = this.locX + vec3d.c * d8;
+                    entitylargefireball.locX = this.locX + vec3d.a * d8;
                     entitylargefireball.locY = this.locY + (double) (this.length / 2.0F) + 0.5D;
-                    entitylargefireball.locZ = this.locZ + vec3d.e * d8;
+                    entitylargefireball.locZ = this.locZ + vec3d.c * d8;
                     this.world.addEntity(entitylargefireball);
                     this.bp = -40;
                 }
@@ -149,7 +148,7 @@ public class EntityGhast extends EntityFlying implements IMonster {
                 --this.bp;
             }
         } else {
-            this.aN = this.yaw = -((float) Math.atan2(this.motX, this.motZ)) * 180.0F / 3.1415927F;
+            this.aM = this.yaw = -((float) Math.atan2(this.motX, this.motZ)) * 180.0F / 3.1415927F;
             if (this.bp > 0) {
                 --this.bp;
             }
@@ -167,7 +166,7 @@ public class EntityGhast extends EntityFlying implements IMonster {
 
     private boolean a(double d0, double d1, double d2, double d3) {
         double d4 = (this.i - this.locX) / d3;
-        double d5 = (this.j - this.locY) / d3;
+        double d5 = (this.bm - this.locY) / d3;
         double d6 = (this.bn - this.locZ) / d3;
         AxisAlignedBB axisalignedbb = this.boundingBox.clone();
 
@@ -198,24 +197,19 @@ public class EntityGhast extends EntityFlying implements IMonster {
     }
 
     protected void dropDeathLoot(boolean flag, int i) {
-        // CraftBukkit start
-        java.util.List<org.bukkit.inventory.ItemStack> loot = new java.util.ArrayList<org.bukkit.inventory.ItemStack>();
         int j = this.random.nextInt(2) + this.random.nextInt(1 + i);
 
         int k;
 
-        if (j > 0) {
-            loot.add(CraftItemStack.asNewCraftStack(Items.GHAST_TEAR, j));
+        for (k = 0; k < j; ++k) {
+            this.a(Items.GHAST_TEAR, 1);
         }
 
         j = this.random.nextInt(3) + this.random.nextInt(1 + i);
 
-        if (j > 0) {
-            loot.add(CraftItemStack.asNewCraftStack(Items.SULPHUR, j));
+        for (k = 0; k < j; ++k) {
+            this.a(Items.SULPHUR, 1);
         }
-
-        org.bukkit.craftbukkit.event.CraftEventFactory.callEntityDeathEvent(this, loot);
-        // CraftBukkit end
     }
 
     protected float bf() {
@@ -226,7 +220,7 @@ public class EntityGhast extends EntityFlying implements IMonster {
         return this.random.nextInt(20) == 0 && super.canSpawn() && this.world.difficulty != EnumDifficulty.PEACEFUL;
     }
 
-    public int bz() {
+    public int bB() {
         return 1;
     }
 

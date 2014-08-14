@@ -1,7 +1,5 @@
 package net.minecraft.server;
 
-import org.bukkit.craftbukkit.inventory.CraftItemStack; // CraftBukkit
-
 public class EntityIronGolem extends EntityGolem {
 
     private int bq;
@@ -40,7 +38,7 @@ public class EntityIronGolem extends EntityGolem {
             this.bq = 70 + this.random.nextInt(50);
             this.bp = this.world.villages.getClosestVillage(MathHelper.floor(this.locX), MathHelper.floor(this.locY), MathHelper.floor(this.locZ), 32);
             if (this.bp == null) {
-                this.bV();
+                this.bX();
             } else {
                 ChunkCoordinates chunkcoordinates = this.bp.getCenter();
 
@@ -53,7 +51,7 @@ public class EntityIronGolem extends EntityGolem {
 
     protected void aD() {
         super.aD();
-        this.getAttributeInstance(GenericAttributes.a).setValue(100.0D);
+        this.getAttributeInstance(GenericAttributes.maxHealth).setValue(100.0D);
         this.getAttributeInstance(GenericAttributes.d).setValue(0.25D);
     }
 
@@ -61,12 +59,21 @@ public class EntityIronGolem extends EntityGolem {
         return i;
     }
 
-    protected void n(Entity entity) {
+    protected void o(Entity entity) {
         if (entity instanceof IMonster && this.aI().nextInt(20) == 0) {
-            this.setGoalTarget((EntityLiving) entity);
+            // CraftBukkit start
+            org.bukkit.event.entity.EntityTargetLivingEntityEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityTargetLivingEvent(this, (EntityLiving) entity, org.bukkit.event.entity.EntityTargetEvent.TargetReason.COLLISION);
+            if (!event.isCancelled()) {
+                if (event.getTarget() == null) {
+                    this.setGoalTarget(null);
+                } else {
+                    this.setGoalTarget(((org.bukkit.craftbukkit.entity.CraftLivingEntity) event.getTarget()).getHandle());
+                }
+            }
+            // CraftBukkit end
         }
 
-        super.n(entity);
+        super.o(entity);
     }
 
     public void e() {
@@ -86,7 +93,7 @@ public class EntityIronGolem extends EntityGolem {
             Block block = this.world.getType(i, j, k);
 
             if (block.getMaterial() != Material.AIR) {
-                this.world.addParticle("blockcrack_" + Block.b(block) + "_" + this.world.getData(i, j, k), this.locX + ((double) this.random.nextFloat() - 0.5D) * (double) this.width, this.boundingBox.b + 0.1D, this.locZ + ((double) this.random.nextFloat() - 0.5D) * (double) this.width, 4.0D * ((double) this.random.nextFloat() - 0.5D), 0.5D, ((double) this.random.nextFloat() - 0.5D) * 4.0D);
+                this.world.addParticle("blockcrack_" + Block.getId(block) + "_" + this.world.getData(i, j, k), this.locX + ((double) this.random.nextFloat() - 0.5D) * (double) this.width, this.boundingBox.b + 0.1D, this.locZ + ((double) this.random.nextFloat() - 0.5D) * (double) this.width, 4.0D * ((double) this.random.nextFloat() - 0.5D), 0.5D, ((double) this.random.nextFloat() - 0.5D) * 4.0D);
             }
         }
     }
@@ -105,7 +112,7 @@ public class EntityIronGolem extends EntityGolem {
         this.setPlayerCreated(nbttagcompound.getBoolean("PlayerCreated"));
     }
 
-    public boolean m(Entity entity) {
+    public boolean n(Entity entity) {
         this.br = 10;
         this.world.broadcastEntityEffect(this, (byte) 4);
         boolean flag = entity.damageEntity(DamageSource.mobAttack(this), (float) (7 + this.random.nextInt(15)));
@@ -118,7 +125,7 @@ public class EntityIronGolem extends EntityGolem {
         return flag;
     }
 
-    public Village bX() {
+    public Village bZ() {
         return this.bp;
     }
 
@@ -140,27 +147,22 @@ public class EntityIronGolem extends EntityGolem {
     }
 
     protected void dropDeathLoot(boolean flag, int i) {
-        // CraftBukkit start
-        java.util.List<org.bukkit.inventory.ItemStack> loot = new java.util.ArrayList<org.bukkit.inventory.ItemStack>();
         int j = this.random.nextInt(3);
 
         int k;
 
-        if (j > 0) {
-            loot.add(CraftItemStack.asNewCraftStack(Item.getItemOf(Blocks.RED_ROSE), j));
+        for (k = 0; k < j; ++k) {
+            this.a(Item.getItemOf(Blocks.RED_ROSE), 1, 0.0F);
         }
 
         k = 3 + this.random.nextInt(3);
 
-        if (k > 0) {
-            loot.add(CraftItemStack.asNewCraftStack(Items.IRON_INGOT, k));
+        for (int l = 0; l < k; ++l) {
+            this.a(Items.IRON_INGOT, 1);
         }
-
-        org.bukkit.craftbukkit.event.CraftEventFactory.callEntityDeathEvent(this, loot);
-        // CraftBukkit end
     }
 
-    public int bZ() {
+    public int cb() {
         return this.bs;
     }
 

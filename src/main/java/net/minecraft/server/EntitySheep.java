@@ -51,7 +51,7 @@ public class EntitySheep extends EntityAnimal {
 
     protected void aD() {
         super.aD();
-        this.getAttributeInstance(GenericAttributes.a).setValue(8.0D);
+        this.getAttributeInstance(GenericAttributes.maxHealth).setValue(8.0D);
         this.getAttributeInstance(GenericAttributes.d).setValue(0.23000000417232513D);
     }
 
@@ -61,15 +61,9 @@ public class EntitySheep extends EntityAnimal {
     }
 
     protected void dropDeathLoot(boolean flag, int i) {
-        // CraftBukkit start - Whole method
-        java.util.List<org.bukkit.inventory.ItemStack> loot = new java.util.ArrayList<org.bukkit.inventory.ItemStack>();
-
         if (!this.isSheared()) {
-            loot.add(new org.bukkit.inventory.ItemStack(org.bukkit.Material.WOOL, 1, (short) 0, (byte) this.getColor()));
+            this.a(new ItemStack(Item.getItemOf(Blocks.WOOL), 1, this.getColor()), 0.0F);
         }
-
-        org.bukkit.craftbukkit.event.CraftEventFactory.callEntityDeathEvent(this, loot);
-        // CraftBukkit end
     }
 
     protected Item getLoot() {
@@ -191,8 +185,8 @@ public class EntitySheep extends EntityAnimal {
         }
     }
 
-    public GroupDataEntity a(GroupDataEntity groupdataentity) {
-        groupdataentity = super.a(groupdataentity);
+    public GroupDataEntity prepare(GroupDataEntity groupdataentity) {
+        groupdataentity = super.prepare(groupdataentity);
         this.setColor(a(this.world.random));
         return groupdataentity;
     }

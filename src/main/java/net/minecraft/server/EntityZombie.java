@@ -1,12 +1,16 @@
 package net.minecraft.server;
 
 import java.util.Calendar;
+import java.util.List;
 import java.util.UUID;
+
 
 //CraftBukkit start
 import org.bukkit.craftbukkit.entity.CraftLivingEntity;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityCombustByEntityEvent;
 import org.bukkit.event.entity.EntityCombustEvent;
+import org.bukkit.event.entity.EntityTargetEvent;
 //CraftBukkit end
 
 public class EntityZombie extends EntityMonster {
@@ -19,7 +23,7 @@ public class EntityZombie extends EntityMonster {
     private boolean bu = false;
     private float bv = -1.0F;
     private float bw;
-    private int lastTick = MinecraftServer.currentTick; // CraftBukkit
+    private int lastTick = MinecraftServer.currentTick; // CraftBukkit - add field
 
     public EntityZombie(World world) {
         super(world);
@@ -43,7 +47,7 @@ public class EntityZombie extends EntityMonster {
         this.getAttributeInstance(GenericAttributes.b).setValue(40.0D);
         this.getAttributeInstance(GenericAttributes.d).setValue(0.23000000417232513D);
         this.getAttributeInstance(GenericAttributes.e).setValue(3.0D);
-        this.bc().b(bp).setValue(this.random.nextDouble() * 0.10000000149011612D);
+        this.getAttributeMap().b(bp).setValue(this.random.nextDouble() * 0.10000000149011612D);
     }
 
     protected void c() {
@@ -67,7 +71,7 @@ public class EntityZombie extends EntityMonster {
         return true;
     }
 
-    public boolean bX() {
+    public boolean bZ() {
         return this.bu;
     }
 
@@ -117,7 +121,7 @@ public class EntityZombie extends EntityMonster {
     }
 
     public void e() {
-        if (this.world.v() && !this.world.isStatic && !this.isBaby()) {
+        if (this.world.w() && !this.world.isStatic && !this.isBaby()) {
             float f = this.d(1.0F);
 
             if (f > 0.5F && this.random.nextFloat() * 30.0F < (f - 0.4F) * 2.0F && this.world.i(MathHelper.floor(this.locX), MathHelper.floor(this.locY), MathHelper.floor(this.locZ))) {
@@ -149,6 +153,10 @@ public class EntityZombie extends EntityMonster {
             }
         }
 
+        if (this.am() && this.getGoalTarget() != null && this.vehicle instanceof EntityChicken) {
+            ((EntityInsentient) this.vehicle).getNavigation().a(this.getNavigation().e(), 1.5D);
+        }
+
         super.e();
     }
 
@@ -158,8 +166,8 @@ public class EntityZombie extends EntityMonster {
         } else {
             EntityLiving entityliving = this.getGoalTarget();
 
-            if (entityliving == null && this.bR() instanceof EntityLiving) {
-                entityliving = (EntityLiving) this.bR();
+            if (entityliving == null && this.bT() instanceof EntityLiving) {
+                entityliving = (EntityLiving) this.bT();
             }
 
             if (entityliving == null && damagesource.getEntity() instanceof EntityLiving) {
@@ -180,9 +188,18 @@ public class EntityZombie extends EntityMonster {
                     if (World.a((IBlockAccess) this.world, i1, j1 - 1, k1) && this.world.getLightLevel(i1, j1, k1) < 10) {
                         entityzombie.setPosition((double) i1, (double) j1, (double) k1);
                         if (this.world.b(entityzombie.boundingBox) && this.world.getCubes(entityzombie, entityzombie.boundingBox).isEmpty() && !this.world.containsLiquid(entityzombie.boundingBox)) {
-                            this.world.addEntity(entityzombie, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.REINFORCEMENTS); // CraftBukkit
-                            entityzombie.setGoalTarget(entityliving);
-                            entityzombie.a((GroupDataEntity) null);
+                            this.world.addEntity(entityzombie, CreatureSpawnEvent.SpawnReason.REINFORCEMENTS); // CraftBukkit
+                            // CraftBukkit start - call EntityTargetEvent
+                            org.bukkit.event.entity.EntityTargetLivingEntityEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityTargetLivingEvent(entityzombie, entityliving, EntityTargetEvent.TargetReason.REINFORCEMENT_TARGET);
+                            if (!event.isCancelled()) {
+                                if (event.getTarget() == null) {
+                                    entityzombie.setGoalTarget(null);
+                                } else {
+                                    entityzombie.setGoalTarget(((org.bukkit.craftbukkit.entity.CraftLivingEntity) event.getTarget()).getHandle());
+                                }
+                            }
+                            // CraftBukkit end
+                            entityzombie.prepare((GroupDataEntity) null);
                             this.getAttributeInstance(bp).a(new AttributeModifier("Zombie reinforcement caller charge", -0.05000000074505806D, 0));
                             entityzombie.getAttributeInstance(bp).a(new AttributeModifier("Zombie reinforcement callee charge", -0.05000000074505806D, 0));
                             break;
@@ -196,8 +213,8 @@ public class EntityZombie extends EntityMonster {
     }
 
     public void h() {
-        if (!this.world.isStatic && this.ca()) {
-            int i = this.cc();
+        if (!this.world.isStatic && this.cc()) {
+            int i = this.ce();
 
             // CraftBukkit start - Use wall time instead of ticks for villager conversion
             int elapsedTicks = MinecraftServer.currentTick - this.lastTick;
@@ -207,15 +224,15 @@ public class EntityZombie extends EntityMonster {
 
             this.bt -= i;
             if (this.bt <= 0) {
-                this.cb();
+                this.cd();
             }
         }
 
         super.h();
     }
 
-    public boolean m(Entity entity) {
-        boolean flag = super.m(entity);
+    public boolean n(Entity entity) {
+        boolean flag = super.n(entity);
 
         if (flag) {
             int i = this.world.difficulty.a();
@@ -259,23 +276,23 @@ public class EntityZombie extends EntityMonster {
         return EnumMonsterType.UNDEAD;
     }
 
-    // CraftBukkit start - Return rare dropped item instead of dropping it
-    protected ItemStack getRareDrop(int i) {
+    protected void getRareDrop(int i) {
         switch (this.random.nextInt(3)) {
-        case 0:
-            return new ItemStack(Items.IRON_INGOT, 1, 0);
-        case 1:
-            return new ItemStack(Items.CARROT, 1, 0);
-        case 2:
-            return new ItemStack(Items.POTATO, 1, 0);
-        default:
-            return null;
+            case 0:
+                this.a(Items.IRON_INGOT, 1);
+                break;
+
+            case 1:
+                this.a(Items.CARROT, 1);
+                break;
+
+            case 2:
+                this.a(Items.POTATO, 1);
         }
     }
-    // CraftBukkit end
 
-    protected void bA() {
-        super.bA();
+    protected void bC() {
+        super.bC();
         if (this.random.nextFloat() < (this.world.difficulty == EnumDifficulty.HARD ? 0.05F : 0.01F)) {
             int i = this.random.nextInt(3);
 
@@ -297,8 +314,8 @@ public class EntityZombie extends EntityMonster {
             nbttagcompound.setBoolean("IsVillager", true);
         }
 
-        nbttagcompound.setInt("ConversionTime", this.ca() ? this.bt : -1);
-        nbttagcompound.setBoolean("CanBreakDoors", this.bX());
+        nbttagcompound.setInt("ConversionTime", this.cc() ? this.bt : -1);
+        nbttagcompound.setBoolean("CanBreakDoors", this.bZ());
     }
 
     public void a(NBTTagCompound nbttagcompound) {
@@ -321,27 +338,27 @@ public class EntityZombie extends EntityMonster {
     public void a(EntityLiving entityliving) {
         super.a(entityliving);
         if ((this.world.difficulty == EnumDifficulty.NORMAL || this.world.difficulty == EnumDifficulty.HARD) && entityliving instanceof EntityVillager) {
-            if (this.random.nextBoolean()) {
+            if (this.world.difficulty != EnumDifficulty.HARD && this.random.nextBoolean()) {
                 return;
             }
 
             EntityZombie entityzombie = new EntityZombie(this.world);
 
-            entityzombie.j(entityliving);
+            entityzombie.k(entityliving);
             this.world.kill(entityliving);
-            entityzombie.a((GroupDataEntity) null);
+            entityzombie.prepare((GroupDataEntity) null);
             entityzombie.setVillager(true);
             if (entityliving.isBaby()) {
                 entityzombie.setBaby(true);
             }
 
-            this.world.addEntity(entityzombie);
+            this.world.addEntity(entityzombie, CreatureSpawnEvent.SpawnReason.INFECTION); // CraftBukkit - add SpawnReason
             this.world.a((EntityHuman) null, 1016, (int) this.locX, (int) this.locY, (int) this.locZ, 0);
         }
     }
 
-    public GroupDataEntity a(GroupDataEntity groupdataentity) {
-        Object object = super.a(groupdataentity);
+    public GroupDataEntity prepare(GroupDataEntity groupdataentity) {
+        Object object = super.prepare(groupdataentity);
         float f = this.world.b(this.locX, this.locY, this.locZ);
 
         this.h(this.random.nextFloat() < 0.55F * f);
@@ -358,12 +375,30 @@ public class EntityZombie extends EntityMonster {
 
             if (groupdatazombie.a) {
                 this.setBaby(true);
+                if ((double) this.world.random.nextFloat() < 0.05D) {
+                    List list = this.world.a(EntityChicken.class, this.boundingBox.grow(5.0D, 3.0D, 5.0D), IEntitySelector.b);
+
+                    if (!list.isEmpty()) {
+                        EntityChicken entitychicken = (EntityChicken) list.get(0);
+
+                        entitychicken.i(true);
+                        this.mount(entitychicken);
+                    }
+                } else if ((double) this.world.random.nextFloat() < 0.05D) {
+                    EntityChicken entitychicken1 = new EntityChicken(this.world);
+
+                    entitychicken1.setPositionRotation(this.locX, this.locY, this.locZ, this.yaw, 0.0F);
+                    entitychicken1.prepare((GroupDataEntity) null);
+                    entitychicken1.i(true);
+                    this.world.addEntity(entitychicken1, CreatureSpawnEvent.SpawnReason.MOUNT);
+                    this.mount(entitychicken1);
+                }
             }
         }
 
         this.a(this.random.nextFloat() < f * 0.1F);
-        this.bA();
-        this.bB();
+        this.bC();
+        this.bD();
         if (this.getEquipment(4) == null) {
             Calendar calendar = this.world.V();
 
@@ -382,7 +417,7 @@ public class EntityZombie extends EntityMonster {
 
         if (this.random.nextFloat() < f * 0.05F) {
             this.getAttributeInstance(bp).a(new AttributeModifier("Leader zombie bonus", this.random.nextDouble() * 0.25D + 0.5D, 0));
-            this.getAttributeInstance(GenericAttributes.a).a(new AttributeModifier("Leader zombie bonus", this.random.nextDouble() * 3.0D + 1.0D, 2));
+            this.getAttributeInstance(GenericAttributes.maxHealth).a(new AttributeModifier("Leader zombie bonus", this.random.nextDouble() * 3.0D + 1.0D, 2));
             this.a(true);
         }
 
@@ -390,7 +425,7 @@ public class EntityZombie extends EntityMonster {
     }
 
     public boolean a(EntityHuman entityhuman) {
-        ItemStack itemstack = entityhuman.bD();
+        ItemStack itemstack = entityhuman.bF();
 
         if (itemstack != null && itemstack.getItem() == Items.GOLDEN_APPLE && itemstack.getData() == 0 && this.isVillager() && this.hasEffect(MobEffectList.WEAKNESS)) {
             if (!entityhuman.abilities.canInstantlyBuild) {
@@ -414,36 +449,36 @@ public class EntityZombie extends EntityMonster {
     protected void a(int i) {
         this.bt = i;
         this.getDataWatcher().watch(14, Byte.valueOf((byte) 1));
-        this.m(MobEffectList.WEAKNESS.id);
+        this.removeEffect(MobEffectList.WEAKNESS.id);
         this.addEffect(new MobEffect(MobEffectList.INCREASE_DAMAGE.id, i, Math.min(this.world.difficulty.a() - 1, 0)));
         this.world.broadcastEntityEffect(this, (byte) 16);
     }
 
     protected boolean isTypeNotPersistent() {
-        return !this.ca();
+        return !this.cc();
     }
 
-    public boolean ca() {
+    public boolean cc() {
         return this.getDataWatcher().getByte(14) == 1;
     }
 
-    protected void cb() {
+    protected void cd() {
         EntityVillager entityvillager = new EntityVillager(this.world);
 
-        entityvillager.j(this);
-        entityvillager.a((GroupDataEntity) null);
-        entityvillager.cb();
+        entityvillager.k(this);
+        entityvillager.prepare((GroupDataEntity) null);
+        entityvillager.cd();
         if (this.isBaby()) {
             entityvillager.setAge(-24000);
         }
 
         this.world.kill(this);
-        this.world.addEntity(entityvillager);
+        this.world.addEntity(entityvillager, CreatureSpawnEvent.SpawnReason.CURED); // CraftBukkit - add SpawnReason
         entityvillager.addEffect(new MobEffect(MobEffectList.CONFUSION.id, 200, 0));
         this.world.a((EntityHuman) null, 1017, (int) this.locX, (int) this.locY, (int) this.locZ, 0);
     }
 
-    protected int cc() {
+    protected int ce() {
         int i = 1;
 
         if (this.random.nextFloat() < 0.01F) {

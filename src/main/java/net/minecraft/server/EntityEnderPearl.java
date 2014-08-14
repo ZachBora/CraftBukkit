@@ -2,7 +2,7 @@ package net.minecraft.server;
 
 // CraftBukkit start
 import org.bukkit.Bukkit;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.event.player.PlayerTeleportEvent;
 // CraftBukkit end
 
@@ -29,8 +29,8 @@ public class EntityEnderPearl extends EntityProjectile {
             if (this.getShooter() != null && this.getShooter() instanceof EntityPlayer) {
                 EntityPlayer entityplayer = (EntityPlayer) this.getShooter();
 
-                if (entityplayer.playerConnection.b().d() && entityplayer.world == this.world) {
-                    // CraftBukkit start
+                if (entityplayer.playerConnection.b().isConnected() && entityplayer.world == this.world) {
+                    // CraftBukkit start - Fire PlayerTeleportEvent
                     org.bukkit.craftbukkit.entity.CraftPlayer player = entityplayer.getBukkitEntity();
                     org.bukkit.Location location = getBukkitEntity().getLocation();
                     location.setPitch(player.getLocation().getPitch());
@@ -40,17 +40,15 @@ public class EntityEnderPearl extends EntityProjectile {
                     Bukkit.getPluginManager().callEvent(teleEvent);
 
                     if (!teleEvent.isCancelled() && !entityplayer.playerConnection.isDisconnected()) {
+                        if (this.getShooter().am()) {
+                            this.getShooter().mount((Entity) null);
+                        }
+
                         entityplayer.playerConnection.teleport(teleEvent.getTo());
                         this.getShooter().fallDistance = 0.0F;
-
-                        EntityDamageByEntityEvent damageEvent = new EntityDamageByEntityEvent(this.getBukkitEntity(), player, EntityDamageByEntityEvent.DamageCause.FALL, 5.0D);
-                        Bukkit.getPluginManager().callEvent(damageEvent);
-
-                        if (!damageEvent.isCancelled() && !entityplayer.playerConnection.isDisconnected()) {
-                            entityplayer.invulnerableTicks = -1; // Remove spawning invulnerability
-                            player.setLastDamageCause(damageEvent);
-                            entityplayer.damageEntity(DamageSource.FALL, (float) damageEvent.getDamage());
-                        }
+                        CraftEventFactory.entityDamage = this;
+                        this.getShooter().damageEntity(DamageSource.FALL, 5.0F);
+                        CraftEventFactory.entityDamage = null;
                     }
                     // CraftBukkit end
                 }

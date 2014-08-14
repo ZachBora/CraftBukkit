@@ -17,7 +17,7 @@ public class TileEntityHopper extends TileEntity implements IHopper {
     private String i;
     private int j = -1;
 
-    // CraftBukkit start
+    // CraftBukkit start - add fields and methods
     public List<HumanEntity> transaction = new java.util.ArrayList<HumanEntity>();
     private int maxStack = MAX_STACK;
 
@@ -150,7 +150,7 @@ public class TileEntityHopper extends TileEntity implements IHopper {
     }
 
     public int getMaxStackSize() {
-        return 64;
+        return maxStack; // CraftBukkit
     }
 
     public boolean a(EntityHuman entityhuman) {
@@ -159,7 +159,7 @@ public class TileEntityHopper extends TileEntity implements IHopper {
 
     public void startOpen() {}
 
-    public void l_() {}
+    public void closeContainer() {}
 
     public boolean b(int i, ItemStack itemstack) {
         return true;
@@ -178,9 +178,16 @@ public class TileEntityHopper extends TileEntity implements IHopper {
     public boolean i() {
         if (this.world != null && !this.world.isStatic) {
             if (!this.j() && BlockHopper.c(this.p())) {
-                boolean flag = this.k();
+                boolean flag = false;
 
-                flag = suckInItems(this) || flag;
+                if (!this.k()) {
+                    flag = this.y();
+                }
+
+                if (!this.l()) {
+                    flag = suckInItems(this) || flag;
+                }
+
                 if (flag) {
                     this.c(8);
                     this.update();
@@ -195,50 +202,136 @@ public class TileEntityHopper extends TileEntity implements IHopper {
     }
 
     private boolean k() {
-        IInventory iinventory = this.l();
+        ItemStack[] aitemstack = this.a;
+        int i = aitemstack.length;
+
+        for (int j = 0; j < i; ++j) {
+            ItemStack itemstack = aitemstack[j];
+
+            if (itemstack != null) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private boolean l() {
+        ItemStack[] aitemstack = this.a;
+        int i = aitemstack.length;
+
+        for (int j = 0; j < i; ++j) {
+            ItemStack itemstack = aitemstack[j];
+
+            if (itemstack == null || itemstack.count != itemstack.getMaxStackSize()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private boolean y() {
+        IInventory iinventory = this.z();
 
         if (iinventory == null) {
             return false;
         } else {
-            for (int i = 0; i < this.getSize(); ++i) {
-                if (this.getItem(i) != null) {
-                    ItemStack itemstack = this.getItem(i).cloneItemStack();
-                    // CraftBukkit start - Call event when pushing items into other inventories
-                    CraftItemStack oitemstack = CraftItemStack.asCraftMirror(this.splitStack(i, 1));
+            int i = Facing.OPPOSITE_FACING[BlockHopper.b(this.p())];
 
-                    Inventory destinationInventory;
-                    // Have to special case large chests as they work oddly
-                    if (iinventory instanceof InventoryLargeChest) {
-                        destinationInventory = new org.bukkit.craftbukkit.inventory.CraftInventoryDoubleChest((InventoryLargeChest) iinventory);
-                    } else {
-                        destinationInventory = iinventory.getOwner().getInventory();
-                    }
+            if (this.a(iinventory, i)) {
+                return false;
+            } else {
+                for (int j = 0; j < this.getSize(); ++j) {
+                    if (this.getItem(j) != null) {
+                        ItemStack itemstack = this.getItem(j).cloneItemStack();
+                        // CraftBukkit start - Call event when pushing items into other inventories
+                        CraftItemStack oitemstack = CraftItemStack.asCraftMirror(this.splitStack(j, 1));
 
-                    InventoryMoveItemEvent event = new InventoryMoveItemEvent(this.getOwner().getInventory(), oitemstack.clone(), destinationInventory, true);
-                    this.getWorld().getServer().getPluginManager().callEvent(event);
-                    if (event.isCancelled()) {
-                        this.setItem(i, itemstack);
-                        this.c(8); // Delay hopper checks
-                        return false;
-                    }
-                    ItemStack itemstack1 = addItem(iinventory, CraftItemStack.asNMSCopy(event.getItem()), Facing.OPPOSITE_FACING[BlockHopper.b(this.p())]);
-
-                    if (itemstack1 == null || itemstack1.count == 0) {
-                        if (event.getItem().equals(oitemstack)) {
-                            iinventory.update();
+                        Inventory destinationInventory;
+                        // Have to special case large chests as they work oddly
+                        if (iinventory instanceof InventoryLargeChest) {
+                            destinationInventory = new org.bukkit.craftbukkit.inventory.CraftInventoryDoubleChest((InventoryLargeChest) iinventory);
                         } else {
-                            this.setItem(i, itemstack);
+                            destinationInventory = iinventory.getOwner().getInventory();
                         }
-                        // CraftBukkit end
-                        return true;
-                    }
 
-                    this.setItem(i, itemstack);
+                        InventoryMoveItemEvent event = new InventoryMoveItemEvent(this.getOwner().getInventory(), oitemstack.clone(), destinationInventory, true);
+                        this.getWorld().getServer().getPluginManager().callEvent(event);
+                        if (event.isCancelled()) {
+                            this.setItem(j, itemstack);
+                            this.c(8); // Delay hopper checks
+                            return false;
+                        }
+                        ItemStack itemstack1 = addItem(iinventory, CraftItemStack.asNMSCopy(event.getItem()), i);
+
+                        if (itemstack1 == null || itemstack1.count == 0) {
+                            if (event.getItem().equals(oitemstack)) {
+                                iinventory.update();
+                            } else {
+                                this.setItem(j, itemstack);
+                            }
+                            // CraftBukkit end
+                            return true;
+                        }
+
+                        this.setItem(j, itemstack);
+                    }
+                }
+
+                return false;
+            }
+        }
+    }
+
+    private boolean a(IInventory iinventory, int i) {
+        if (iinventory instanceof IWorldInventory && i > -1) {
+            IWorldInventory iworldinventory = (IWorldInventory) iinventory;
+            int[] aint = iworldinventory.getSlotsForFace(i);
+
+            for (int j = 0; j < aint.length; ++j) {
+                ItemStack itemstack = iworldinventory.getItem(aint[j]);
+
+                if (itemstack == null || itemstack.count != itemstack.getMaxStackSize()) {
+                    return false;
                 }
             }
+        } else {
+            int k = iinventory.getSize();
 
-            return false;
+            for (int l = 0; l < k; ++l) {
+                ItemStack itemstack1 = iinventory.getItem(l);
+
+                if (itemstack1 == null || itemstack1.count != itemstack1.getMaxStackSize()) {
+                    return false;
+                }
+            }
         }
+
+        return true;
+    }
+
+    private static boolean b(IInventory iinventory, int i) {
+        if (iinventory instanceof IWorldInventory && i > -1) {
+            IWorldInventory iworldinventory = (IWorldInventory) iinventory;
+            int[] aint = iworldinventory.getSlotsForFace(i);
+
+            for (int j = 0; j < aint.length; ++j) {
+                if (iworldinventory.getItem(aint[j]) != null) {
+                    return false;
+                }
+            }
+        } else {
+            int k = iinventory.getSize();
+
+            for (int l = 0; l < k; ++l) {
+                if (iinventory.getItem(l) != null) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     public static boolean suckInItems(IHopper ihopper) {
@@ -246,6 +339,10 @@ public class TileEntityHopper extends TileEntity implements IHopper {
 
         if (iinventory != null) {
             byte b0 = 0;
+
+            if (b(iinventory, b0)) {
+                return false;
+            }
 
             if (iinventory instanceof IWorldInventory && b0 > -1) {
                 IWorldInventory iworldinventory = (IWorldInventory) iinventory;
@@ -416,7 +513,7 @@ public class TileEntityHopper extends TileEntity implements IHopper {
         return itemstack;
     }
 
-    private IInventory l() {
+    private IInventory z() {
         int i = BlockHopper.b(this.p());
 
         return getInventoryAt(this.getWorld(), (double) (this.x + Facing.b[i]), (double) (this.y + Facing.c[i]), (double) (this.z + Facing.d[i]));
@@ -427,7 +524,7 @@ public class TileEntityHopper extends TileEntity implements IHopper {
     }
 
     public static EntityItem getEntityItemAt(World world, double d0, double d1, double d2) {
-        List list = world.a(EntityItem.class, AxisAlignedBB.a().a(d0, d1, d2, d0 + 1.0D, d1 + 1.0D, d2 + 1.0D), IEntitySelector.a);
+        List list = world.a(EntityItem.class, AxisAlignedBB.a(d0, d1, d2, d0 + 1.0D, d1 + 1.0D, d2 + 1.0D), IEntitySelector.a);
 
         return list.size() > 0 ? (EntityItem) list.get(0) : null;
     }
@@ -451,7 +548,7 @@ public class TileEntityHopper extends TileEntity implements IHopper {
         }
 
         if (iinventory == null) {
-            List list = world.getEntities((Entity) null, AxisAlignedBB.a().a(d0, d1, d2, d0 + 1.0D, d1 + 1.0D, d2 + 1.0D), IEntitySelector.b);
+            List list = world.getEntities((Entity) null, AxisAlignedBB.a(d0, d1, d2, d0 + 1.0D, d1 + 1.0D, d2 + 1.0D), IEntitySelector.c);
 
             if (list != null && list.size() > 0) {
                 iinventory = (IInventory) list.get(world.random.nextInt(list.size()));

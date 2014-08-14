@@ -15,7 +15,7 @@ public class EntitySilverfish extends EntityMonster {
 
     protected void aD() {
         super.aD();
-        this.getAttributeInstance(GenericAttributes.a).setValue(8.0D);
+        this.getAttributeInstance(GenericAttributes.maxHealth).setValue(8.0D);
         this.getAttributeInstance(GenericAttributes.d).setValue(0.6000000238418579D);
         this.getAttributeInstance(GenericAttributes.e).setValue(1.0D);
     }
@@ -57,7 +57,7 @@ public class EntitySilverfish extends EntityMonster {
     protected void a(Entity entity, float f) {
         if (this.attackTicks <= 0 && f < 1.2F && entity.boundingBox.e > this.boundingBox.b && entity.boundingBox.b < this.boundingBox.e) {
             this.attackTicks = 20;
-            this.m(entity);
+            this.n(entity);
         }
     }
 
@@ -66,11 +66,11 @@ public class EntitySilverfish extends EntityMonster {
     }
 
     protected Item getLoot() {
-        return Item.d(0);
+        return Item.getById(0);
     }
 
     public void h() {
-        this.aN = this.yaw;
+        this.aM = this.yaw;
         super.h();
     }
 
@@ -120,7 +120,7 @@ public class EntitySilverfish extends EntityMonster {
                 }
             }
 
-            if (this.target == null && !this.bQ()) {
+            if (this.target == null && !this.bS()) {
                 i = MathHelper.floor(this.locX);
                 j = MathHelper.floor(this.locY + 0.5D);
                 k = MathHelper.floor(this.locZ);
@@ -130,7 +130,7 @@ public class EntitySilverfish extends EntityMonster {
                 l = this.world.getData(i + Facing.b[l1], j + Facing.c[l1], k + Facing.d[l1]);
                 if (BlockMonsterEggs.a(block)) {
                     // CraftBukkit start
-                    if (CraftEventFactory.callEntityChangeBlockEvent(this, i + Facing.b[l1], j + Facing.c[l1], k + Facing.d[l1], Blocks.MONSTER_EGGS, Block.b(BlockMonsterEggs.e(l))).isCancelled()) {
+                    if (CraftEventFactory.callEntityChangeBlockEvent(this, i + Facing.b[l1], j + Facing.c[l1], k + Facing.d[l1], Blocks.MONSTER_EGGS, Block.getId(BlockMonsterEggs.getById(l))).isCancelled()) {
                         return;
                     }
                     // CraftBukkit end
@@ -139,9 +139,9 @@ public class EntitySilverfish extends EntityMonster {
                     this.s();
                     this.die();
                 } else {
-                    this.bO();
+                    this.bQ();
                 }
-            } else if (this.target != null && !this.bQ()) {
+            } else if (this.target != null && !this.bS()) {
                 this.target = null;
             }
         }
