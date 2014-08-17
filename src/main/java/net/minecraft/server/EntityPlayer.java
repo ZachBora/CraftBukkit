@@ -17,7 +17,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 // CraftBukkit start
+import java.util.Random;
+
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.WeatherType;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
@@ -25,6 +28,7 @@ import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
+import org.bukkit.generator.ChunkGenerator;
 // CraftBukkit end
 
 public class EntityPlayer extends EntityHuman implements ICrafting {
@@ -80,6 +84,22 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
             j += this.random.nextInt(l * 2) - l;
             k = worldserver.i(i, j);
         }
+        
+        // CraftBukkit start
+        CraftWorld craftworld = worldserver.getWorld();
+        ChunkGenerator chunkgenerator = craftworld.getGenerator();
+
+        if (chunkgenerator != null) {
+            Location fixedspawnlocation = chunkgenerator.getFixedSpawnLocation(craftworld, new Random(craftworld.getSeed()));
+
+            if (fixedspawnlocation != null) {
+                world = craftworld.getHandle();
+                i = fixedspawnlocation.getBlockX();
+                j = fixedspawnlocation.getBlockZ();
+                k = fixedspawnlocation.getBlockY();
+            }
+        }
+        // CraftBukkit end
 
         this.server = minecraftserver;
         this.bO = minecraftserver.getPlayerList().a((EntityHuman) this);
