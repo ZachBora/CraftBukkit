@@ -20,8 +20,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 // CraftBukkit start
-import java.util.Random;
-
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.chunkio.ChunkIOExecutor;
@@ -37,7 +35,6 @@ import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
-import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.util.Vector;
 // CraftBukkit end
 
@@ -229,19 +226,6 @@ public abstract class PlayerList {
             g.debug("loading single player");
         } else {
             nbttagcompound1 = this.playerFileData.load(entityplayer);
-
-            //CraftBukkit start - Verify if the generator of that world has a fixed spawn position
-            CraftWorld craftworld = entityplayer.server.worlds.get(0).getWorld();
-            ChunkGenerator chunkgenerator = craftworld.getGenerator();
-
-            if (chunkgenerator != null) {
-                Location fixedspawnlocation = chunkgenerator.getFixedSpawnLocation(craftworld, new Random(craftworld.getSeed()));
-
-                if (fixedspawnlocation != null) {
-                    entityplayer.setPosition(fixedspawnlocation.getX(), fixedspawnlocation.getY(), fixedspawnlocation.getZ());
-                }
-            }
-            // CraftBukkit end
         }
 
         return nbttagcompound1;
